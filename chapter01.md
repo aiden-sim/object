@@ -292,6 +292,72 @@ public class Theater {
 ```
 - Theater 코드가 간단하게 변경됨
 - Theater는 오직 TicketSeller의 인터페이스에만 의존한다.
+- TicketSeller가 내부에 TicketOffice 인터페이스를 포함하고 있다는 사실은 구현(implementation)의 영역에 속한다.
+- 객체를 인터페이스와 구현으로 나누고 인터페이스만을 공개하는 것은 객체 사이의 결합도를 낮추고 변경하기 쉬운 코드로 작성하기 위한 가장 기본적인 설계 원칙
+  
+- Theater의 결합도를 낮춘 설계
+![object-1-4](https://user-images.githubusercontent.com/7076334/104104789-95ddcd00-52ed-11eb-891b-309db67b4021.png)
+- Theater에서 TicketOffice, Bag, Ticket의 의존성이 제거됨
+
+- TicketSeller 다음으로 Audience 캡슐화를 개선하자
+  - 현재 Audience의 getBag 메서드를 호출해서 Bag 인스턴스에 접근 중
+  
+- Bag에 접근하는 모든 로직을 Audience 내부로 감추기 위해 buy메서드 추가 후, TicketSeller의 sellTo 메서드에서 getBag 메서드 접근 하는 부분을 이동
+```java
+public class Audience {
+    // 소지품을 위한 가방 소지
+    private Bag bag;
+
+    public Audience(Bag bag) {
+        this.bag = bag;
+    }
+
+    /* TicketSeller에게 제공해줄 필요가 없으니 삭제
+    public Bag getBag() {
+        return bag;
+    }
+    */
+
+    // TicketSeller의 sellTo 로직을 옮겨옴
+    public Long buy(Ticket ticket) {
+        if (bag.hashInvitation()) {
+            bag.setTicket(ticket);
+            return 0L;
+        } else {
+            bag.setTicket(ticket);
+            bag.minusAmount(ticket.getFee());
+            return ticket.getFee();
+        }
+    }
+}
+```
+- Audience는 자신의 가방 안에 초대장이 들어있는지 스스로 확인
+  - Bag의 존재를 내부로 캡슐화
+
+
+- TicketSeller가 Audience의 인터페이스에만 의존하도록 수정
+```java
+public class TicketSeller {
+    private TicketOffice ticketOffice;
+
+    public TicketSeller(TicketOffice ticketOffice) {
+        this.ticketOffice = ticketOffice;
+    }
+
+    public void sellTo(Audience audience) {
+        Long buyAmount = audience.buy(ticketOffice.getTicket());
+        ticketOffice.plusAmount(buyAmount);
+    }
+}
+```
+- TicketSeller와 Audience 사이의 결합도가 낮아졌음
+  - 즉 Audience의 구현을 수정하더라도 TicketSeller에는 영향이 없음
+  
+- 자율적인 Audience와 TicketSeller로 구성된 설계
+![object-1-6](https://user-images.githubusercontent.com/7076334/104105357-c5420900-52f0-11eb-99f0-89d09b0416c8.png)
+- TicketSeller에서 Bag의 의존성이 제거됨
+
+## 무엇이 개선됐는가
 - 
 
-  
+- 느낀점 : getter를 관행적으로 제공해줄 필요가 없구나
