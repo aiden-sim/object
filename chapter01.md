@@ -225,13 +225,73 @@ public class Theater {
 - 객체 사이의 의존성이 과한 경우를 가리켜 결합도(coupling)가 높다고 한다.
   - 변경하기 어려워 진다.
 - 반대로 객체들이 합리적인 수준으로 의존할 경우에는 결합도가 낮다고 말한다.
+- 설계의 목표는 객체 사이의 결합도를 낮춰 변경이 용이한 설계를 만드는 것이어야 한다.
 
+# 03 설계 개선하기
+- 이 코드는 기능은 제대로 수행하지만 이해하기 어렵고 변경하기 쉽지 않다. (결합도가 높다.)
 
-
-
-
+- 코드를 이해하기 어려운 이유는 Theater가 관람객의 가방과 판매원의 매표소에 직접 접근하기 때문이다.
+  - 관람객과 판매원이 수동적이 되었음
+  - Audience와 TicketSeller에 결합된다는 것을 의미
   
-  
+- 해결법은?
+  - Theater가 Audience와 TicketSeller에 관해 너무 세세한 부분까지 알지 못하도록 정보를 차단하면 된다.
+  - 관람객이 가방을 가직조 있다는 사실과 판매원이 매표소에서 티켓을 판매 한다는 사실을 Theater가 알 필요 없다.
+  - Theater가 알아야 하는 것은 관람객이 소극장에 입장하는 것 뿐이다.
+  - 관람객과 판매원을 자율적인 존재(능동적)로 만들자
 
+## 자율성을 높이자
+- 첫 번째 단계는 Theater의 enter 메서드에서 TicketOffice에 접근하는 모든 코드를 TicketSeller 내부로 숨긴다.
+
+```java
+public class TicketSeller {
+    private TicketOffice ticketOffice;
+
+    public TicketSeller(TicketOffice ticketOffice) {
+        this.ticketOffice = ticketOffice;
+    }
+
+    /* Theater에게 제공해 줄 필요가 없으니 삭제
+    public TicketOffice getTicketOffice() {
+        return ticketOffice;
+    }
+    */
+
+    // Theater의 enter 로직을 옮겨옴
+    public void sellTo(Audience audience) {
+        if (audience.getBag().hashInvitation()) {
+            Ticket ticket = ticketOffice.getTicket();
+            audience.getBag().setTicket(ticket);
+        } else {
+            Ticket ticket = ticketOffice.getTicket();
+            audience.getBag().minusAmount(ticket.getFee());
+
+            ticketOffice.plusAmount(ticket.getFee());
+            audience.getBag().setTicket(ticket);
+        }
+    }
+}
+```
+- getTicketOffice 메서드가 제거 (외부에서 직접 제거할 수 없음)
+- 이처럼 개념적이나 물리적으로 객체 내부의 세부적인 사항을 감추는 것을 캡슐화(encapsulation)라고 부른다.
+  - 캡슐화의 목적은 변경하기 쉬운 객체를 만드는 것이다.
+  - 객체와 객체 사이의 결합도를 낮출 수 있기 때문에 설계를 좀 더 쉽게 변경 가능
+  
+```java
+public class Theater {
+    private TicketSeller ticketSeller;
+
+    public Theater(TicketSeller ticketSeller) {
+        this.ticketSeller = ticketSeller;
+    }
+
+    public void enter(Audience audience) {
+        ticketSeller.sellTo(audience);
+    }
+}
+```
+- Theater 코드가 간단하게 변경됨
+- Theater는 오직 TicketSeller의 인터페이스에만 의존한다.
+- 
 
   
