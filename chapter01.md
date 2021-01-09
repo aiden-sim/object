@@ -16,15 +16,19 @@
 - 이벤트 당첨된 관람객은 초대장을 티켓으로 교환 후 입장
 - 이벤트 미 당첨된 관람객은 티켓을 구매 후 입장
 
-- 초대장
 ```java
+/**
+ * 초대장
+ */
 public class Invitation {
   private LocalDateTime when; // 초대일자
 }
 ```
 
-- Ticket
 ```java
+/**
+ * 티켓 (공연을 관람하기 위해 모든 사람들이 티켓을 소지)
+ */
 public class Ticket {
   private Long fee; // 수수료
   
@@ -33,3 +37,6 @@ public class Ticket {
   }
 }
 ```
+
+![object-1-1](https://user-images.githubusercontent.com/7076334/104099965-552b8700-52e0-11eb-8167-ce4570a7521c.png)
+
