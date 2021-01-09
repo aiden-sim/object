@@ -30,7 +30,7 @@ public class Invitation {
  * 티켓 (공연을 관람하기 위해 모든 사람들이 티켓을 소지)
  */
 public class Ticket {
-  private Long fee; // 수수료
+  private Long fee; // 요금
   
   public Long getFee() {
     reeturn fee;
@@ -146,6 +146,36 @@ public class TicketSeller {
 }
 ```
 
-
+- 애플리케이션의 핵심 클래스
 ![object-1-1](https://user-images.githubusercontent.com/7076334/104099965-552b8700-52e0-11eb-8167-ce4570a7521c.png)
 
+
+```java
+/**
+ * 소극장
+ */
+public class Theater {
+    private TicketSeller ticketSeller;
+
+    public Theater(TicketSeller ticketSeller) {
+        this.ticketSeller = ticketSeller;
+    }
+
+    /**
+     * 1) 초대장이 있으면 이벤트에 당첨된 관람객이므로 티켓을 발급
+     * 2) 초대장이 없으면 티켓 판매 후 티켓을 발급
+     */
+    public void enter(Audience audience) {
+        if (audience.getBag().hashInvitation()) {
+            Ticket ticket = ticketSeller.getTicketOffice().getTicket();
+            audience.getBag().setTicket(ticket);
+        } else {
+            Ticket ticket = ticketSeller.getTicketOffice().getTicket();
+            audience.getBag().minusAmount(ticket.getFee());
+
+            ticketSeller.getTicketOffice().plusAmount(ticket.getFee());
+            audience.getBag().setTicket(ticket);
+        }
+    }
+}
+```
