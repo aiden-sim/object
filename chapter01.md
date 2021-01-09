@@ -58,7 +58,7 @@ public class Bag {
         this.amount = amount;
     }
 
-    // 초장 소유 여부
+    // 초대장 소유 여부
     public boolean hashInvitation() {
         return invitation != null;
     }
@@ -397,6 +397,112 @@ public class TicketSeller {
 
 - 훌륭한 객체지향 설계의 핵심은 캡슐화를 이용해 의존성을 적절히 관리함으로써 객체 사이의 결합도를 낮추는 것
   - 일반적으로 객체지향이 절차지향에 비해 변경에 좀 더 유연하다고 말하는 이유가 바로 이것임
+
+## 책임의 이동
+- 두 방식 사이에 근본적인 차이를 만드는 것은 **책임의 이동** 이다.
+- 그림 1.7
+  - 책임이 Theater에 집중되어 있다.
+- 그림 1.8
+  - 제어 흐름이 각 객체에 적절하게 분산돼 있다. 하나의 기능을 완성하는 데 필요한 책임이 여러 객체에 걸쳐 분산돼 있음
+  
+- 변경 전 절차적 설계에서 Theater의 작업을 변경 후의 객체지향 설계에서는 각 객체가 자신이 맡은 일을 스스로 처리했음
+  - 이것이 바로 **책임의 이동**이 의미하는 것
+  
+- 객체지향 설계에서 각 객체는 **자신을 스스로 책임** 진다.
+
+- 사실 객체지향 설계의 핵심은 적절한 객체에 적절한 책임을 할당하는 것
+  - 객체는 다른 객체와의 협력이라는 문맥 안에서 특정한 역할을 수행하는데 필요한 적절한 책임을 수행해야 함
+  
+- 요 약
+  - 설계를 어렵게 만드는 것은 **의존성**
+  - 해결 방법은 불필요한 의존성을 제거함으로써 객체 사이의 **결합도**를 낮추는 것
+  - 예제에서 결합도를 낮추기 위해 선택한 방법으로 세부사항을 내부로 감춰 **캡슐화**
+  - 캡슐화하는 것은 객체의 **자율성**을 높이고 **응집도** 높은 객체들의 공동체를 창조할 수 있게함
+
+
+## 더 개선할 수 있다
+- Audience는 자율적인 존재다. 하지만 Bag은 어떤가?
+- Bag을 자율적인 존재로 바꿔보자
+
+```java
+public class Bag {
+    private Long amount;
+    private Ticket ticket;
+    private Invitation invitation;
+
+    // Audience buy 로직을 옮겨옴
+    public Long hold(Ticket ticket) {
+        if (hashInvitation()) {
+            setTicket(ticket);
+            return 0L;
+        } else {
+            setTicket(ticket);
+            minusAmount(ticket.getFee());
+            return ticket.getFee();
+        }
+    }
+
+    private void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
+
+    // 초대장 소유 여부
+    private boolean hashInvitation() {
+        return invitation != null;
+    }
+
+    private void minusAmount(Long amount) {
+        this.amount -= amount;
+    }
+}
+
+public class Audience {
+    public Long buy(Ticket ticket) {
+        return bag.hold(ticket);
+    }
+}
+```
+- public 메서드였던 hasInvitation, minusAmount, setTicket 메서드들이 외부에서 사용되지 않기 때문에 private으로 변경됨
+  - 기존 메서드들 유지한 이유는 코드의 중복을 제거하고 표현력을 높이기 위해서
+
+
+- TicketSeller 역시 TicketOffice의 자유권을 침해한다.
+- TicketOffice에 있는 Ticket을 마음대로 꺼내서 Audience에 팔고 받은 돈을 마음대로 TicketOffice에 넣고 있다.
+```java
+public class TicketOffice {
+    private Long amount;
+    private List<Ticket> tickets = new ArrayList<>();
+
+    // TicketSeller sellTo 로직을 옮겨옴
+    public void sellTicketTo(Audience audience) {
+        Long buyAmount = audience.buy(getTicket());
+        plusAmount(buyAmount);
+    }
+
+    private Ticket getTicket() {
+        return tickets.remove(0);
+    }
+
+    private void plusAmount(Long amount) {
+        this.amount += amount;
+    }
+}
+
+public class TicketSeller {
+    // Theater의 enter 로직을 옮겨옴
+    public void sellTo(Audience audience) {
+        ticketOffice.sellTicketTo(audience);
+    }
+}
+```
+- TicketOffice에 sellTicketTo 메서드를 추가하고 TicketSeller의 sellTo 메서드의 내부 코드를 옮기자
+- getTicket, plusAmount 메서드는 TicketOffice 내부에서만 사용하기 때문에 private 으로 변경 가능
+- TicketSeller가 TicketOffice의 구현이 아닌 인터페이스에만 의존 
+
+
+## 그래, 거짓말이다!
+- 
+
 
 
 - 느낀점 : getter를 관행적으로 제공해줄 필요가 없구나
