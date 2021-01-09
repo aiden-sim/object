@@ -38,5 +38,114 @@ public class Ticket {
 }
 ```
 
+```java
+/**
+ * 관람객의 소지품 보관
+ */
+public class Bag {
+    private Long amount;
+    private Invitation invitation;
+    private Ticket ticket;
+
+    // 현금만 있다.
+    public Bag(long amount) {
+        this(null, amount);
+    }
+
+    // 초대장과 현금이 있다.
+    public Bag(Invitation invitation, long amount) {
+        this.invitation = invitation;
+        this.amount = amount;
+    }
+
+    // 초장 소유 여부
+    public boolean hashInvitation() {
+        return invitation != null;
+    }
+
+    // 티켓 소유 여부
+    public boolean hasTicket() {
+        return ticket != null;
+    }
+
+    public void setTicket(Ticket ticket) {
+        this.ticket = ticket;
+    }
+
+    public void minusAmount(Long amount) {
+        this.amount -= amount;
+    }
+
+    public void plusAmount(Long amount) {
+        this.amount += amount;
+    }
+}
+```
+
+
+```java
+/**
+ * 관람객
+ */
+public class Audience {
+    // 소지품을 위한 가방 소지
+    private Bag bag;
+
+    public Audience(Bag bag) {
+        this.bag = bag;
+    }
+
+    public Bag getBag() {
+        return bag;
+    }
+}
+```
+
+```java
+/**
+ * 매표소 (초대장을 티켓으로 교환하거나 구매)
+ */
+public class TicketOffice {
+    private Long amount;
+    private List<Ticket> tickets = new ArrayList<>();
+
+    public TicketOffice(Long amount, Ticket... tickets) {
+        this.amount = amount;
+        this.tickets.addAll(Arrays.asList(tickets));
+    }
+
+    // 편의를 위해 첫번째 티켓 반환
+    public Ticket getTicket() {
+        return tickets.remove(0);
+    }
+
+    public void minusAmount(Long amount) {
+        this.amount -= amount;
+    }
+
+    public void plusAmount(Long amount) {
+        this.amount += amount;
+    }
+}
+```
+
+```java
+/**
+ * 판매원 (매표소에서 초대장을 티켓으로 교환해 주거나 티켓을 판매 역할)
+ */
+public class TicketSeller {
+    private TicketOffice ticketOffice;
+
+    public TicketSeller(TicketOffice ticketOffice) {
+        this.ticketOffice = ticketOffice;
+    }
+
+    public TicketOffice getTicketOffice() {
+        return ticketOffice;
+    }
+}
+```
+
+
 ![object-1-1](https://user-images.githubusercontent.com/7076334/104099965-552b8700-52e0-11eb-8167-ce4570a7521c.png)
 
