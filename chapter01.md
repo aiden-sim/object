@@ -514,6 +514,19 @@ public class Bag {
 }
 
 public class Audience {
+    /* Bag의 hold 메서드로 옮겨감
+    public Long buy(Ticket ticket) {
+        if (bag.hashInvitation()) {
+            bag.setTicket(ticket);
+            return 0L;
+        } else {
+            bag.setTicket(ticket);
+            bag.minusAmount(ticket.getFee());
+            return ticket.getFee();
+        }
+    }
+    */
+
     public Long buy(Ticket ticket) {
         return bag.hold(ticket);
     }
