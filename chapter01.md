@@ -380,7 +380,7 @@ public class TicketSeller {
         this.ticketOffice = ticketOffice;
     }
 
-    /* Audience의 buy 메서드로 
+    /* Audience의 buy 메서드로 옮겼음
     public void sellTo(Audience audience) {
         if (audience.getBag().hashInvitation()) {
             Ticket ticket = ticketOffice.getTicket();
