@@ -109,13 +109,14 @@ public class Audience {
 }
 ```
 
+- 매표소에는 관람객에게 판매할 티켓과 티켓의 판매 금액이 보관돼 있어야 한다.
 ```java
 /**
  * 매표소 (초대장을 티켓으로 교환하거나 구매)
  */
 public class TicketOffice {
-    private Long amount;
-    private List<Ticket> tickets = new ArrayList<>();
+    private Long amount; // 판매 금액
+    private List<Ticket> tickets = new ArrayList<>(); // 티켓의 목록
 
     public TicketOffice(Long amount, Ticket... tickets) {
         this.amount = amount;
@@ -127,6 +128,7 @@ public class TicketOffice {
         return tickets.remove(0);
     }
 
+    // 판매 금액을 더하거나 차감
     public void minusAmount(Long amount) {
         this.amount -= amount;
     }
@@ -137,6 +139,7 @@ public class TicketOffice {
 }
 ```
 
+- 판매원은 매표소에서 초대장을 티켓으로 교환해 주거나 티켓을 판매하는 역할을 수행
 ```java
 /**
  * 판매원 (매표소에서 초대장을 티켓으로 교환해 주거나 티켓을 판매 역할)
