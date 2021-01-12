@@ -537,7 +537,7 @@ public class Audience {
 
 
 - TicketSeller 역시 TicketOffice의 자유권을 침해한다.
-- TicketOffice에 있는 Ticket을 마음대로 꺼내서 Audience에 팔고 받은 돈을 마음대로 TicketOffice에 넣고 있다.
+- TicketSeller는 TicketOffice에 있는 Ticket을 마음대로 꺼내서 Audience에 팔고 받은 돈을 마음대로 TicketOffice에 넣고 있다.
 ```java
 public class TicketOffice {
     private Long amount;
