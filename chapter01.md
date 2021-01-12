@@ -336,7 +336,7 @@ public class Theater {
 
 - TicketSeller 다음으로 Audience 캡슐화를 개선하자
   - 현재 Audience의 getBag 메서드를 호출해서 Bag 인스턴스에 접근 중
-  - Bag 인스턴스에 접근하는 객체가 Theater에서 TicketSeller로 변경되었을 뿐 여전히 수동적인 
+  - Bag 인스턴스에 접근하는 객체가 Theater에서 TicketSeller로 변경되었을 뿐 여전히 수동적인 존재
   
 - Bag에 접근하는 모든 로직을 Audience 내부로 감추기 위해 buy메서드 추가 후, TicketSeller의 sellTo 메서드에서 getBag 메서드 접근 하는 부분을 이동
 ```java
