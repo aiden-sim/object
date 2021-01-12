@@ -304,6 +304,7 @@ public class Theater {
         this.ticketSeller = ticketSeller;
     }
 
+    // enter 로직을 TicketSeller로 이동함
     public void enter(Audience audience) {
         ticketSeller.sellTo(audience);
     }
