@@ -417,6 +417,9 @@ public class TicketSeller {
   
 - Audience나 TicketSeller의 내부 구현을 변경하더라도 Theater를 함께 변경할 필요 없어짐
 
+- Audience가 가방이 아니라 작은 지갑을 소지하도록 변경하고 싶으면? Audience 내부만 변경하면됨
+- TicketSeller가 매표소가 아닌 은행에 돈을 보관하도록 만들고 싶으면? TicketSeller 내부만 변경
+
 ## 어떻게 한 것인가
 - 자기 자신의 문제를 스스로 해결하도록 코드를 변경
   - 그 결과 코드는 변경이 용이하고 이해 가능하도록 수정
