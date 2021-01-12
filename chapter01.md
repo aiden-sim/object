@@ -325,7 +325,7 @@ public class Theater {
 }
 ```
 - Theater 코드가 간단하게 변경됨
-- Theater는 tickeotOffice에 접근하지 
+- Theater는 ticketOffice에 접근하지 않게됨
 - Theater는 오직 TicketSeller의 인터페이스에만 의존한다.
 - TicketSeller가 내부에 TicketOffice 인터페이스를 포함하고 있다는 사실은 구현(implementation)의 영역에 속한다.
 - 객체를 인터페이스와 구현으로 나누고 인터페이스만을 공개하는 것은 객체 사이의 결합도를 낮추고 변경하기 쉬운 코드로 작성하기 위한 가장 기본적인 설계 원칙
