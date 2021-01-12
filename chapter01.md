@@ -40,14 +40,17 @@ public class Ticket {
 }
 ```
 
+- 관람객이 가지고 올 수 있는 소지품은 초대장, 현금, 티켓 세 가지 뿐
+- 관람객은 소지품을 보관할 용도로 가방을 들고 올 수 있다고 가정
+
 ```java
 /**
  * 관람객의 소지품 보관
  */
 public class Bag {
-    private Long amount;
-    private Invitation invitation;
-    private Ticket ticket;
+    private Long amount; // 현금
+    private Invitation invitation; // 초대장
+    private Ticket ticket; // 티켓
 
     // 현금만 있다.
     public Bag(long amount) {
@@ -70,10 +73,12 @@ public class Bag {
         return ticket != null;
     }
 
+    // 초대장을 티켓으로 교환
     public void setTicket(Ticket ticket) {
         this.ticket = ticket;
     }
 
+    // 현금을 증가 시키거나 감소
     public void minusAmount(Long amount) {
         this.amount -= amount;
     }
@@ -84,6 +89,7 @@ public class Bag {
 }
 ```
 
+- 관람객은 소지품을 보관하기 위해 가방을 소지할 수 있음
 
 ```java
 /**
