@@ -380,6 +380,21 @@ public class TicketSeller {
         this.ticketOffice = ticketOffice;
     }
 
+    /* Audience의 buy 메서드로 
+    public void sellTo(Audience audience) {
+        if (audience.getBag().hashInvitation()) {
+            Ticket ticket = ticketOffice.getTicket();
+            audience.getBag().setTicket(ticket);
+        } else {
+            Ticket ticket = ticketOffice.getTicket();
+            audience.getBag().minusAmount(ticket.getFee());
+
+            ticketOffice.plusAmount(ticket.getFee());
+            audience.getBag().setTicket(ticket);
+        }
+    }
+    */
+
     public void sellTo(Audience audience) {
         Long buyAmount = audience.buy(ticketOffice.getTicket());
         ticketOffice.plusAmount(buyAmount);
