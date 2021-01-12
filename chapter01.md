@@ -559,7 +559,12 @@ public class TicketOffice {
 }
 
 public class TicketSeller {
-    // Theater의 enter 로직을 옮겨옴
+    /* TicketOffice의 sellTicketTo로 옮김
+    public void sellTo(Audience audience) {
+        ticketOffice.plusAmount(audience.buy(ticketOffice.getTicket()));
+    }
+    */
+
     public void sellTo(Audience audience) {
         ticketOffice.sellTicketTo(audience);
     }
