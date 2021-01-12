@@ -236,6 +236,11 @@ public class Theater {
 - 너무 많은 클래스에 의존하는 Theater
 ![1-2](https://user-images.githubusercontent.com/7076334/104103858-cae72100-52e7-11eb-9f58-47b8d315594f.jpeg)
 
+- 연관 (다른 객체의 참조를 가지는 필드)
+  - TicketSeller
+- 의존 (메서드 내에서 해당 클래스 생성, 사용, 리턴)
+  - Audience, TicketOffice, Ticket
+
 - 객체 사이의 의존성이 과한 경우를 가리켜 결합도(coupling)가 높다고 한다.
   - 변경하기 어려워 진다.
 - 반대로 객체들이 합리적인 수준으로 의존할 경우에는 결합도가 낮다고 말한다.
