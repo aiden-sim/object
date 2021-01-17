@@ -44,10 +44,47 @@
 - 영화 예매 도메인을 구성하는 타입들의 구조
 ![2 3](https://user-images.githubusercontent.com/7076334/104843596-d8fff780-590e-11eb-8726-a098a51152c4.png)
 
-- 일반적으로 클래스의 이름은 
+- 일반적으로 클래스의 이름은 대응되는 도메인 개념의 이름과 동일하거나 적어도 유사하게 지어야 됨
+  - 프로그램 구조를 이해하고 예상하기 쉽게 만듬
+  
+- 도메인 개념의 구조를 따르는 클래스 구조
+![2 4](https://user-images.githubusercontent.com/7076334/104843885-4a8c7580-5910-11eb-8bb3-a835a3a0260c.png)
+  - 클래스의 구조는 도메인의 구조와 유사한 형태를 띠어야 함
 
 
 ## 클래스 구현하기
+- Screening 클래스는 사용자들이 예매하는 대상인 '상영'을 구현
 
 
+```java
+public class Screening {
 
+    private Movie movie;                // 상영할 영화
+    private int sequence;               // 순번
+    private LocalDateTime whenScreened; // 상영 시작 시간
+
+    public Screening(Movie movie, int sequence, LocalDateTime whenScreened) {
+        this.movie = movie;
+        this.sequence = sequence;
+        this.whenScreened = whenScreened;
+    }
+
+    // 상영 시작 시간
+    public LocalDateTime getStartTime() {
+        return whenScreened;
+    }
+
+    // 순번의 일치 여부 검사
+    public boolean isSequence(int sequence) {
+        return this.sequence == sequence;
+    }
+
+    // 기본 요금을 반환
+    public Movie getMovieFee() {
+        return movie.getFee();
+    }
+}
+```
+
+- 인스턴스 변수의 가시성은 private 이고 메서드의 가시성은 public
+- 
