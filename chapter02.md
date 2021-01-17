@@ -416,5 +416,44 @@ public class PercentDiscountPolicy extends DiscountPolicy {
   - ex) Money의 plus 메서드
   
 
-  
+## 할인 정책 구성하기
+- Movice의 생성자는 오직 하나의 DiscountPolicy (할인 정책) 만 강제하도록 선언
+```java
+public class Movie {
+    public Movie(String title, Duration runningTime, Money fee, DiscountPolicy discountPolicy) {
+        ...
+        this.discountPolicy = discountPolicy;
+    }
+}
+```
 
+- DiscountPolicy의 생성자는 여러 개의 DiscountCondition 인스턴스를 허용
+```java
+public abstract class DiscountPolicy {
+    public DiscountPolicy(DiscountCondition... conditions) {
+        this.conditions = Arrays.asList(conditions);
+    }
+}
+```
+
+- 이처럼 생성자의 파라미터 목록을 이용해 초기화에 필요한 정보를 전달하도록 강제하면 올바른 상태를 가진 객체의 생성을 보장 가능
+
+- 표[2.1] 아바타에 대한 할인 정책과 할인 조건 설정
+![2 1](https://user-images.githubusercontent.com/7076334/104850611-6b19f700-5933-11eb-85c2-d9aaa7bf9c55.png)
+
+```java
+        Movie avater = new Movie("아바타",
+                                 Duration.ofMinutes(120),
+                                 Money.wons(10000),
+                                 new AmountDiscountPolicy(Money.wons(800),
+                                                          new SequenceCondition(1),
+                                                          new SequenceCondition(10),
+                                                          new PeriodCondition(DayOfWeek.MONDAY, LocalTime.of(10, 0),
+                                                                              LocalTime.of(11, 59)),
+                                                          new PeriodCondition(DayOfWeek.THURSDAY,
+                                                                              LocalTime.of(18, 0), LocalTime.of(21, 0))
+                                 )
+```
+
+# 04 상속과 다형성
+- 
