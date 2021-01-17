@@ -23,7 +23,7 @@
 - 예매 정보
   - 제목, 상영정보, 인원, 정가, 결제금액
     
-## 02 객체지향 프로그래밍을 향해
+# 02 객체지향 프로그래밍을 향해
 ## 협력, 객체, 클래스
 - 대부분 사람들은 클래스를 결정한 후에 클래스에 어떤 속성과 메서드가 필요한 고민
   - 객체지향의 본질과는 거리가 멈
@@ -80,7 +80,7 @@ public class Screening {
     }
 
     // 기본 요금을 반환
-    public Movie getMovieFee() {
+    public Money getMovieFee() {
         return movie.getFee();
     }
 }
@@ -153,8 +153,8 @@ public class Screening {
 }
 
 ```
-  - reserve 메서드는 calculateFee라는 private 메서드를 호출해서 요금을 계산한 후 그 결과를 Reservation의 생성자에 전달
-  - calculateFee 메서드는 요금을 계산하기 위해 다시 Movice의 calculateMovieFee 메서드 호출
+- reserve 메서드는 calculateFee라는 private 메서드를 호출해서 요금을 계산한 후 그 결과를 Reservation의 생성자에 전달
+- calculateFee 메서드는 요금을 계산하기 위해 다시 Movice의 calculateMovieFee 메서드 호출
 
 
 - Money는 금액과 관련된 다양한 계산을 구현
@@ -207,12 +207,214 @@ public class Money {
 - 객체지향의 장점은 객체를 이용해 도메인의 의미를 풍부하게 표현할 수 있음
   - 하나의 인스터늣 변수만 포함하더라도 개념을 명시적으로 표현하는 것은 전체적인 설계의 명확성과 유연성을 높이는 첫걸음
   
-- 
+- Reservation 클래스는 고객(customer), 상영 정보(screening), 예매 요금(fee), 인원 수 (audienceCount)를 속성으로 포함
+```java
+public class Reservation {
+    private Customer customer;
+    private Screening screening;
+    private Money fee;
+    private int audienceCount;
+
+    public Reservation(Customer customer, Screening screening, Money fee, int audienceCount) {
+        this.customer = customer;
+        this.screening = screening;
+        this.fee = fee;
+        this.audienceCount = audienceCount;
+    }
+}
+```
+- 영화를 예매하기 위해 Screening, Movice, Reservation 인스턴스들은 서로 메서드를 호출하며 상호 작용을 함
+  - 이처럼 객체들 사이에 이뤄지는 상호작용을 협력 (Collaboration)이라고 부름
+
+- Screening, Reservation, Movice 사이의 협력
+![2 5](https://user-images.githubusercontent.com/7076334/104846604-b70e7100-591e-11eb-8443-acafb39f2de4.png)
 
 
+- 객체지향 프로그램을 작성할 때는 먼저 협력의 관점에서 어떤 객체가 필요한지를 결정하고, 객체들의 공통 상태와 행위를 구현하기 위해 클래스를 작성
 
 
+## 협력에 관한 짧은 이야기
+- 객체는 다른 객체의 인터페이스에 공개된 행동을 수행하도록 **요청(request)** 할 수 있음
+- 요청을 받은 객체는 자율적인 방법에 따라 요청을 처리한 후 **응답(response)** 할 수 있음
+
+- 객체가 다른 객체와 상호작용할 수 있는 유일한 방법은 **메시지를 전송** 하는 것 뿐
+- 다른 객체에게 요청이 도착할 때 해당 객체가 **메시지를 수신** 했다고 함
+  - 수신된 메시지를 처리하기 위한 자신만의 방법을 **메서드(method)** 라고 부른다.
   
+- 메시지와 메서드를 구분하는 것은 매우 중요
+  - 메시지와 메서드의 구분에서부터 **다형성**의 개념이 출발
+
+
+# 03 할인 요금 구하기
+## 할인 요금 계산을 위한 협력 시작하기
+- Movie는 제목과 상영시간, 기본 요금, 할인 정책을 속성으로 가짐
+```java
+public class Movie {
+    private String title;                   // 제목
+    private Duration runningTime;           // 상영시간
+    private Money fee;                      // 기본요금
+    private DiscountPolicy discountPolicy;  // 할인 정책
+
+    public Movie(String title, Duration runningTime, Money fee, DiscountPolicy discountPolicy) {
+        this.title = title;
+        this.runningTime = runningTime;
+        this.fee = fee;
+        this.discountPolicy = discountPolicy;
+    }
+
+    public Money getFee() {
+        return fee;
+    }
+
+    // 기본요금에서 할인 요금 차감
+    public Money calculateMovieFee(Screening screening) {
+        return fee.minus(discountPolicy.calculateDiscountAmount(screening));
+    }
+}
+```
+- 기존에 할인 정책이 2가지 있었음 (일정한 금액을 할인 / 일정한 비율에 따른 할인)
+- 어디에도 할인 정책을 판단하는 코드는 없고 단지 discountPolicy에게 메시지를 전송하고 있음
+  - 이 코드는 객체지향에서 중요하다고 여기는 **상속(inheritance)**과 **다형성**이 숨겨져 있음
+  - 기반에는 **추상화(abstraction)** 원리가 숨겨져 있음
   
+## 할인 정책과 할인 조건
+- 할인 정책은 금액 할인 정책(AmountDiscountPolicy)과 비율 할인 정책(PercentDiscountPolicy)으로 구분
+
+
+```java
+public abstract class DiscountPolicy {
+    private List<DisCountCondition> conditions = new ArrayList<>(); // 할인 조건
+
+    public DiscountPolicy(DisCountCondition... conditions) {
+        this.conditions = Arrays.asList(conditions);
+    }
+
+    /**
+     * 조건이 만족할 경우 getDiscountAmount를 통해 할인 요금 계산
+     * 조건이 만족하지 않는다면 할인 요금 0원으로 반환
+     */
+    public Money calculateDiscountAmount(Screening screening) {
+        for (DisCountCondition each : conditions) {
+            if (each.isSatisfiedBy(screening)) {
+                return getDiscountAmount(screening);
+            }
+        }
+
+        return Money.ZERO;
+    }
+
+    protected abstract Money getDiscountAmount(Screening screening);
+}
+``` 
+
+- 할인 조건이 하나라도 만족하면 **추상 메서드(abstract method)** 인 getDiscountAmount 메서드를 호출해 할인 요금 계산
+- 만족하는 조건이 없다면 할인 요금은 0원
+
+- 부모 클래스에 기본적인 알고리즘의 흐름을 구현하고 중간에 필요한 처리를 자식 클래스에게 위임하는 디자인 패턴을 TemplateMethod 패턴
+
+
+```java
+public interface DisCountCondition {
+    boolean isSatisfiedBy(Screening screening);
+}
+``` 
+- isSatisfiedBy 오퍼레이션은 인자로 전달된 screening이 할인이 가능한 경우 true, 할인이 불가능한 경우 false
+
+- 영화 예매 시스템은 순번 조건과 기간 조건의 두 가지 할인 조건이 존재
+```java
+public class SequenceCondition implements DisCountCondition {
+    private int sequence; // 할인 여부를 판단하기 위해 사용할 순번
+
+    public SequenceCondition(int sequence) {
+        this.sequence = sequence;
+    }
+
+    /**
+     * screening의 상영 순번과 일치할 경우 할인 가능
+     */
+    @Override
+    public boolean isSatisfiedBy(Screening screening) {
+        return screening.isSequence(sequence);
+    }
+}
+``` 
+
+
+```java
+public class PeriodCondition implements DisCountCondition {
+    private DayOfWeek dayOfWeek; // 요일
+    private LocalTime startTime; // 시작 시간
+    private LocalTime endTime;   // 종료 시간
+
+    public PeriodCondition(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+        this.dayOfWeek = dayOfWeek;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
+    /**
+     * screening의 상영 요일이 dayOfWeek와 같고 상영 시간이 startTime ~ endTime 에 포함되는 경우 할인 가능
+     */
+    @Override
+    public boolean isSatisfiedBy(Screening screening) {
+        return screening.getStartTime().getDayOfWeek().equals(dayOfWeek) &&
+                startTime.compareTo(screening.getStartTime().toLocalTime()) <= 0 &&
+                endTime.compareTo(screening.getStartTime().toLocalTime()) >= 0;
+    }
+}
+``` 
+
+- 할인 정책
+- AmountDiscountPolicy는 할인 조건을 만족할 경우 일정한 금액을 할인
+```java
+public class AmountDiscountPolicy extends DiscountPolicy {
+    private Money discountAmount; // 할인 금액
+
+    public AmountDiscountPolicy(Money discountAmount, DisCountCondition... conditions) {
+        super(conditions);
+        this.discountAmount = discountAmount;
+    }
+
+    /**
+     * 일정 금액을 할인
+     */
+    @Override
+    protected Money getDiscountAmount(Screening screening) {
+        return discountAmount;
+    }
+}
+``` 
+
+- PercentDiscountPolicy는 고정 금액이 아닌 일정 비율로 금액을 할인
+```java
+public class PercentDiscountPolicy extends DiscountPolicy {
+    private double percent; // 할인 비율
+
+    public PercentDiscountPolicy(double percent, DiscountCondition... conditions) {
+        super(conditions);
+        this.percent = percent;
+    }
+
+
+    /**
+     * 일정 금액 비율을 할인
+     */
+    @Override
+    protected Money getDiscountAmount(Screening screening) {
+        return screening.getMovieFee().times(percent);
+    }
+}
+``` 
+
+- 할인 정책과 할인 조건
+![2 6](https://user-images.githubusercontent.com/7076334/104849956-f6918900-592f-11eb-95a5-b2ba7b323c93.png)
+
+
+### 오버라이딩과 오버로딩
+- 오버라이딩은 부모 클래스에 정의된 같은 이름, 같은 파라미터 목록을 가진 메서드를 자식 클래스에서 재정의
+- 오버로딩은 메서드의 이름은 같지만 제공되는 파라미터의 목록이 다르다.
+  - ex) Money의 plus 메서드
+  
+
   
 
