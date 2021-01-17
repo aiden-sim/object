@@ -86,5 +86,133 @@ public class Screening {
 }
 ```
 
-- 인스턴스 변수의 가시성은 private 이고 메서드의 가시성은 public
+- 클래스를 구현하거나 다른 개발자에 의해 개발된 클래스를 사용할 때 가장 중요한 것은 클래스의 경계를 구분 짓는 것
+- 클래스는 내부와 외부로 구분되며 훌륭한 클래스를 설계하기 위한 핵심은 어떤 부분을 외부에 공개하고 어떤 부분을 감출지 결정하는 것
+
+- 클래스의 내부 외부 구분 이유?
+  - 경계의 명확성이 객체의 자율성을 보장
+  - 프로그래머에게 구현의 자유를 제공
+  
+### 자율적이 객체
+- 두 가지 중요한 사실
+  - 1) 객체가 **상태(state)와 행동(behavior)** 을 함께 가지는 복합적인 존재
+  - 2) 객체가 스스로 판단하고 행동하는 **자율적인 존재** 라는 것
+
+- 데이터와 기능을 객체 내부로 함께 묶는 것을 **캡슐화** 라고 부른다.
+- 대부분 객체지향 프로그래밍 언어들은 외부에서의 접근을 통제할 수 있는 **접근 제어(access control)** 메커니즘도 함께 제공
+  - 접근 수정자(access modifier) 제공
+
+- 객체 내부에 대한 접근을 통제하는 이유는 객체를 자율적인 존재로 만들기 위해서
+  - 외부 간섭이 최소화 되어야 함
+ 
+- 캡슐화와 접근 제어는 객체를 두 부분을 나눔
+  - 1) 외부에서 접근 가능한 부분, 즉 퍼블릭 인터페이스(public interface)
+  - 2) 외부에서 접근 불가능하고 오직 내부에서만 접근 가능한 부분, 즉 구현(implementation)
+  - 인터페이스와 구현의 분리 원칙은 훌륭한 객체지향 프로그램을 만들기 위한 핵심 원칙
+  
+### 프로그래머의 자유
+- 프로그래머의 역할을 클래스 작성자(class creator)와 클라이언트 프로그래머로 구분하는 것이 유용
+
+- 클라이언트 프로그래머
+  - 필요한 클래스들을 엮어서 애플리케이션을 빠르고 안정적으로 구축
+ 
+- 클래스 작성자
+  - 클라이언트 프로그래머에게 필요한 부분만 공개하고 나머지는 꽁꽁 숨김
+    - 구현 은닉 : 내부 구현을 숨김으로서 클라이언트 프로그래머에 대한 영향을 걱정하지 않고 내부 구현을 마음대로 변경
+    
+- 구현 은닉
+  - 클래스 작성자와 클라이언트 프로그래머 모두에게 유용한 개념
+  - 클라이언트 프로그래머 : 내부 구현은 무시한 채 인터페이스만(public interface) 알고 있으면 됨
+  - 클래스 작성자 : 인터페이스를 바꾸지 않는 한 외부에 미치는 영향을 걱정하지 않고 내부 구현을 마음대로 변경 가능
+  
+- 설계가 필요한 이유는 변경을 관리하기 위해서
+  - 객체의 변경을 관리할 수 있는 기법 중에서 가장 대표적인 것이 접근 제어
+  
+  
+## 협력하는 객체들의 공동체
+- 영화를 예매하는 기능 구현
+
+```java
+public class Screening {
+    /**
+     * 영화를 예매한 후 예매 정보를 담고 있다.
+     * @param customer      예매자
+     * @param audienceCount 인원수
+     */
+    public Reservation reserve(Customer customer, int audienceCount) {
+        return new Reservation(customer, this, calculateFee(audienceCount), audienceCount);
+    }
+
+    /**
+     * @param audienceCount 인원수
+     * @return 전체 예매 요금  (1인당 예매 요금 * 인원수)
+     */
+    private Money calculateFee(int audienceCount) {
+        return movie.calculateMovieFee(this).times(audienceCount);
+    }
+}
+
+```
+  - reserve 메서드는 calculateFee라는 private 메서드를 호출해서 요금을 계산한 후 그 결과를 Reservation의 생성자에 전달
+  - calculateFee 메서드는 요금을 계산하기 위해 다시 Movice의 calculateMovieFee 메서드 호출
+
+
+- Money는 금액과 관련된 다양한 계산을 구현
+```java
+/**
+ * 금액과 관련된 다양한 계산을 구현
+ */
+public class Money {
+    public static final Money ZERO = Money.wons(0);
+
+    private final BigDecimal amount;
+
+    public static Money wons(long amount) {
+        return new Money(BigDecimal.valueOf(amount));
+    }
+
+    public static Money wons(double amount) {
+        return new Money(BigDecimal.valueOf(amount));
+    }
+
+    Money(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public Money plus(Money amount) {
+        return new Money(this.amount.add(amount.amount));
+    }
+
+    public Money minus(Money amount) {
+        return new Money(this.amount.subtract(amount.amount));
+    }
+
+    public Money times(double percent) {
+        return new Money(this.amount.multiply(BigDecimal.valueOf(percent)));
+    }
+
+    public boolean isLessThan(Money other) {
+        return amount.compareTo(other.amount) < 0;
+    }
+
+    public boolean isGreaterThanOrEqual(Money other) {
+        return amount.compareTo(other.amount) >= 0;
+    }
+}
+
+```
+
+- 금액과 관련돼 있다는 의미를 전달할 수 있음
+- 금액과 관련된 로직이 서로 다른 곳에 중복되어 구현되는 것을 막을 수 있음
+- 객체지향의 장점은 객체를 이용해 도메인의 의미를 풍부하게 표현할 수 있음
+  - 하나의 인스터늣 변수만 포함하더라도 개념을 명시적으로 표현하는 것은 전체적인 설계의 명확성과 유연성을 높이는 첫걸음
+  
 - 
+
+
+
+
+  
+  
+  
+
