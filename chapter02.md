@@ -559,17 +559,144 @@ public class Movie {
     
 ## 유연한 설계
 
-
+- 할인 정책이 없는 경우?
+```java
+public class Movie {
+    public Money calculateMovieFee(Screening screening) {
+        if (discountPolicy == null) {
+            return fee;
+        }
+        return fee.minus(discountPolicy.calculateDiscountAmount(screening));
+    }
+}
+```
+- 이 방식의 문제점은 할인 정책이 없는 경우를 예외 케이스로 취급하기 때문에 지금까지 일관성 있던 협력 방식이 무너짐
+- 할인 정책이 없는 경우 할인 금액이 0원이라는 사실을 결정하는 책임이 Movie 있음
+- 책임의 위치를 결정하기 위해 조건문을 사용하는 것은 협력의 설계 측면에서 대부분 좋지 않은 선택
+- 예외 케이스를 최소화하고 일관성을 유지할 수 있는 방법을 선택하라
   
   
+- 일관성을 지키기 위해 NoneDiscountPolicy 클래스 추가
+```java
+public class NoneDiscountPolicy extends DiscountPolicy {
+    @Override
+    protected Money getDiscountAmount(Screening screening) {
+        return Money.ZERO;
+    }
+}
+
+Movie starWars = new Movie("스타워즈",
+      Duration.ofMinutes(200),
+      Money.wons(10000),
+      new NoneDiscountPolicy());
+```
+- Movie와 DiscountPolicy 수정 없이 애플리케이션의 기능 확장
+- 추상화를 중심으로 코드의 구조를 설계하면 유연하고 확장 가능한 설계를 만들 수 있다.
+- 결론은 유연성이 필요한 곳에 추상화를 사용하라
+
+## 추상 클래스와 인터펭피스 트레이드오프
+- NoneDiscountPolicy의 getDiscountAmount() 메서드는 사실 호출되지 않는다.
+  - DiscountPolicy의 할인 조건이 없기 때문이다.
+
+
+```java
+/**
+ * 원래 추상 클래스를 인터페이스로 변경하고 인터페이스만 공유
+ */
+public interface DiscountPolicy {
+    Money calculateDiscountAmount(Screening screening);
+}
+
+/**
+ * 원래의 DiscountPolicy 클래스
+ */
+public abstract class DefaultDiscountPolicy implements DiscountPolicy {
+  ...
+}
+
+/**
+ * DiscountPolicy 클래스의 인터페이스를 구현하도록 변경
+ */
+public class NoneDiscountPolicy implements DiscountPolicy {
+    @Override
+    public Money calculateDiscountAmount(Screening screening) {
+        return Money.ZERO;
+    }
+}
+```
+- NoneDiscountPolicy가 DiscountPolicy 인터페이스를 구현하도록 변경해서 개념적인 혼란과 결합을 제거
+
+![2 15](https://user-images.githubusercontent.com/7076334/104919597-db7b5380-59d9-11eb-83ab-75219bf74c5b.png)
+
+- NoneDiscountPolicy만을 위해 인터페이스를 추가하는 것이 과하다는 생각이 들 수도 있다.
+- 기존의 NoneDiscountPolicy 또한 getDiscountAmount를 통해서 할인 금액이 0원이라는 사실을 효과적으로 전달했음
+
+- 구현과 관련된 모든 것들이 트레이드오프의 대상이 될 수 있다.
+  - 고민하고 트레이드오프하라.
   
+## 코드 재사용
+- 코드 재사용을 위해 상속보다 **합성(composition)** 이 더 좋은 방법
+  - 합성은 다른 객체의 인스턴스를 자신의 인스턴스 변수로 포함해서 재사용하는 방법
+  
+- 상속 대신 합성을 선호하는 이유는?
 
+## 상속
+- 상속은 재사용하기 위해 널리 사용되지만 두 가지 관점에서 설계에 안좋은 영향을 미침
+  - 1) 캡슐화를 위반
+  - 2) 설계를 유연하지 못하게 만듬
+  
+- 가장 큰 문제는 캡슐화 위반
+  - 상속을 이용하기 위해 부모 클래스의 내부 구조를 잘 알고 있어야 함
+  - 부모 클래스의 구현이 자식 클래스에게 노출되기 때문에 캡슐화가 약화
+    - 자식 클래스가 부모 클래스에 강하게 결합되도록 만들어서 부모 클래스 변경할 때 자식 클래스도 함께 변경된다.
+    
+- 설계가 유연하지 않다.
+  - 부모 클래스와 자식 클래스 사이의 관계를 컴파일 시점에 결정
+    - 실행 시점에 객체의 종류를 변경하는 것이 불가
+    
+- 인스턴스 변수로 연결한 기존 방법을 사용하면 실행 시점에 할인 정책을 간단하게 변경 가능
+```java
+public class Movie {
+    public void changeDiscountPolicy(DiscountPolicy discountPolicy) {
+        this.discountPolicy = discountPolicy;
+    }
+}
 
+        Movie avater = new Movie("아바타",
+                                 Duration.ofMinutes(120),
+                                 Money.wons(10000),
+                                 new AmountDiscountPolicy(
+                                         Money.wons(800),
+                                         new SequenceCondition(1),
+                                         new SequenceCondition(10),
+                                         new PeriodCondition(DayOfWeek.MONDAY, LocalTime.of(10, 0),
+                                                             LocalTime.of(11, 59)),
+                                         new PeriodCondition(DayOfWeek.THURSDAY,
+                                                             LocalTime.of(18, 0), LocalTime.of(21, 0))
+                                 )
+        );
+
+        // 정책을 변경
+        avater.changeDiscountPolicy(new PercentDiscountPolicy(...);
+```
+- 위 코드도 Movie가 DiscountPolicy를 포함하는 이 방법 역시 코드를 재사용하는 방법
+
+## 합성
+- 인터페이스에 정의된 메시지를 통해서만 코드를 재사용하는 방법을 **합성** 이라고 부른다.
+- 합성은 상속의 두 가지 문제를 해결함
+  - 인터페이스에 정의된 메시지를 통해서만 사용 가능하기 때문에 구현을 효과적으로 캡슐화
+  - 의존하는 인스턴스를 교체하는 것이 비교접 쉽기 때문에 설계를 유연하게 만듬
+  
+- 대부분 설계에서는 상속과 합성을 함께 사용해야 한다.
+  - 다형성을 위해 인터페이스를 재사용하는 경우에는 상속과 합성을 함께 조합해서 사용
+  
+- 객체지향에서 가장 중요한 것은 애플리케이션의 기능을 구현하기 위해 협력에 참여하는 객체들 사이의 상호작용
+  - 객체들은 협력에 참여하기 위해 역할을 부여받고 역할에 적합한 책임을 수행
+  
+- 객체지향 설계의 핵심은 적절한 협력을 식별하고 협력에 필요한 역할을 정의한 후에 역할을 수행할 수 있는 적절한 객체에게 적절한 책임을 할당
 
 
   
-
-
 
 
 
