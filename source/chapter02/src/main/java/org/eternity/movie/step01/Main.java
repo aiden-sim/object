@@ -29,5 +29,10 @@ public class Main {
                                                             new SequenceCondition(2),
                                                             new PeriodCondition(DayOfWeek.THURSDAY, LocalTime.of(10, 0),
                                                                                 LocalTime.of(14, 0))));
+
+        Movie starWars = new Movie("스타워즈",
+                                   Duration.ofMinutes(200),
+                                   Money.wons(10000),
+                                   new NoneDiscountPolicy());
     }
 }
