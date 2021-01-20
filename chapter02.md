@@ -594,7 +594,7 @@ Movie starWars = new Movie("스타워즈",
 - 추상화를 중심으로 코드의 구조를 설계하면 유연하고 확장 가능한 설계를 만들 수 있다.
 - 결론은 유연성이 필요한 곳에 추상화를 사용하라
 
-## 추상 클래스와 인터펭피스 트레이드오프
+## 추상 클래스와 인터페이스 트레이드오프
 - NoneDiscountPolicy의 getDiscountAmount() 메서드는 사실 호출되지 않는다.
   - DiscountPolicy의 할인 조건이 없기 때문이다.
 
