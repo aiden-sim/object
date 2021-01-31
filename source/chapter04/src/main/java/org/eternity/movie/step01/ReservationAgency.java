@@ -2,8 +2,6 @@ package org.eternity.movie.step01;
 
 import org.eternity.money.Money;
 
-import java.time.chrono.ChronoLocalDate;
-
 public class ReservationAgency {
     public Reservation reserve(Screening screening, Customer customer,
                                int audienceCount) {
@@ -14,8 +12,7 @@ public class ReservationAgency {
         for (DiscountCondition condition : movie.getDiscountConditions()) {
             if (condition.getType() == DiscountConditionType.PERIOD) {
                 discountable = screening.getWhenScreened().getDayOfWeek().equals(condition.getDayOfWeek()) &&
-                        condition.getStartTime().compareTo(
-                                ChronoLocalDate.from(screening.getWhenScreened().toLocalTime())) <= 0 &&
+                        condition.getStartTime().compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
                         condition.getEndTime().compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
             } else {
                 discountable = condition.getSequence() == screening.getSequence();

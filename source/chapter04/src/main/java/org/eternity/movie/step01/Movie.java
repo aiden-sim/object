@@ -19,7 +19,6 @@ public class Movie {
     private Money discountAmount;
     private double discountPercent;
 
-
     public MovieType getMovieType() {
         return movieType;
     }
@@ -28,6 +27,9 @@ public class Movie {
         this.movieType = movieType;
     }
 
+    /**
+     * 접근자와 수정자 메서드는 객체 내부의 상태에 대한 어떤 정보도 캡슐화하지 못한다.
+     */
     public Money getFee() {
         return fee;
     }

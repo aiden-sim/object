@@ -1,7 +1,6 @@
 package org.eternity.movie.step01;
 
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class DiscountCondition {
@@ -10,7 +9,7 @@ public class DiscountCondition {
     private int sequence;
 
     private DayOfWeek dayOfWeek;
-    private LocalDate startTime;
+    private LocalTime startTime;
     private LocalTime endTime;
 
     public DiscountConditionType getType() {
@@ -29,11 +28,11 @@ public class DiscountCondition {
         this.dayOfWeek = dayOfWeek;
     }
 
-    public LocalDate getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDate startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
 
