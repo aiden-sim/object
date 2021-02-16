@@ -154,10 +154,42 @@
 - 이미 결합돼 있는 객체에게 생성 책임을 할당하는 것은 설계의 전체적인 결합도에 영향을 미치지 않음
   - 낮은 결합도를 유지할 수 있게 해줌
   
+# 03 구현을 통한 검증
+- Screening은 예매에 대한 정보 전문가인 동시에 Reservation의 창조자
+```
+public class Screening {
+    public Reservation reserve(Customer customer, int audienceCount) {
+    }
+}
+```
 
+- 책임 결정 후 책임을 수행하는데 필요한 인스턴스 변수를 결정 (상영시간, 상영순번, 가격 계산 메시지를 보내기 위한 Movie)
+```
+public class Screening {
+    private Movie movie;
+    private int sequence;
+    private LocalDateTime whenScreened;
+    
+}
+```
 
+- 영화를 예매하기 위해서 movie에게 가격을 계산하라 메시지를 전송해서 계산된 영화 요금을 반환
+```
+public class Screening {
+    private Movie movie;
+    private int sequence;
+    private LocalDateTime whenScreened;
 
+    // movie 에게 가격을 계산하라 메시지 전송
+    private Money calculateFee(int audienceCount) {
+        return movie.calculateMovieFee(this).times(audienceCount);
+    }
+}
+```
 
-
+- 구현 과정에서 Movie에 전송하는 메시지의 시그니처를 calculateMovieFee로 선언
+  - 수신자인 Movie가 아니라 송신자인 Screening의 의도를 표현
+  - Movie의 구현을 고려하지 않고 필요한 메시지를 결정하면 Movie의 내부 구현을 깔끔하게 캡슐화 할 수 있음
+- 
 
 
