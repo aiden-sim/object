@@ -190,6 +190,121 @@ public class Screening {
 - 구현 과정에서 Movie에 전송하는 메시지의 시그니처를 calculateMovieFee로 선언
   - 수신자인 Movie가 아니라 송신자인 Screening의 의도를 표현
   - Movie의 구현을 고려하지 않고 필요한 메시지를 결정하면 Movie의 내부 구현을 깔끔하게 캡슐화 할 수 있음
-- 
+- 메시지를 기반으로 협력을 구성하면 Screening과 Movie 사이의 결합도를 느슨하게 유지할 수 있음
+  - 이처럼 메시지가 객체를 선택하도록 책임 주도 설계 방식을 따르면 캡슐화와 낮은 결합도라는 목표를 비교적 손쉽게 달성
+  
 
+
+- 할인 정책을 구성하는 할인 금액과 할인 비율을 Movie의 인스턴스 변수로 선언
+- 현재의 Movie가 어떤 할인 정책이 적용된 영화인지 나타내기 위한 영화 종류(movieType)를 인스턴스 변수로 포함
+- isDiscountable를 통해 조건을 만족하는게 있나 확인하고 만족하는게 있으면 calculateDiscountAmount 로 요금 계산
+```
+public class Movie {
+    private String title;
+    private Duration runningTime;
+    private Money fee;
+    private List<DiscountCondition> discountConditions;
+
+    private MovieType movieType;
+    private Money discountAmount;
+    private double discountPercent;
+
+    public Money calculateMovieFee(Screening screening) {
+        if (isDiscountable(screening)) {
+            return fee.minus(calculateDiscountAmount());
+        }
+        return fee;
+    }
+    
+    private boolean isDiscountable(Screening screening) {
+        return discountConditions.stream()
+                .anyMatch(condition -> condition.isSatisfiedBy(screening));
+    }
+
+    private Money calculateDiscountAmount() {
+        switch (movieType) {
+            case AMOUNT_DISCOUNT:
+                return calculateAmountDiscountAmount();
+            case PERCENT_DISCOUNT:
+                return calculatePercentDiscountAmount();
+            case NONE_DISCOUNT:
+                return calculateNoneDiscountAmount();
+        }
+
+        throw new IllegalStateException();
+    }
+}
+```
+
+- DiscountCondition은 이 메시지를 처리하기 위해 isSatisfiedBy 메서드를 구현
+- 기간 조건을 위한 요일, 시작 시간, 종료 시간
+- 순번 조건을 위한 상영 순번 을 인스턴스 변수로 포함
+
+
+```
+public class DiscountCondition {
+    private DiscountConditionType type;
+    private int sequence;
+    private DayOfWeek dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
+
+    public boolean isSatisfiedBy(Screening screening) {
+        if (type == DiscountConditionType.PERIOD) {
+            return isSatisfiedByPeriod(screening);
+        }
+        return isSatisfiedBySequence(screening);
+    }
+
+    private boolean isSatisfiedByPeriod(Screening screening) {
+        return dayOfWeek.equals(screening.getWhenScreened().getDayOfWeek()) &&
+                startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
+                endTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0;
+    }
+
+    private boolean isSatisfiedBySequence(Screening screening) {
+        return sequence == screening.getSequence();
+    }
+}
+```
+
+## DiscountCondition 개선하기
+- 위 코드의 가장 큰 문제점은 변경에 취약할 클래스를 포함하고 있다.
+- DiscountCondition은 다음과 같이 서로 다른 세 가지 이유로 변경될 수 있음
+  - 새로운 할인 조건 추가
+  - 순번 조건을 판단하는 로직 변경
+  - 기간 조건을 판단하는 로직이 변경되는 경우
+  
+
+- DiscountCondition은 하나 이상의 변경 이유를 가지기 때문에 응집도가 낮음
+  - 낮은 응집도가 초래하는 문제를 해결하기 위해서 변경의 이유에 따라 클래스를 분리해야 함
+  - 서로 다른 이유로, 서로 다른 시점에 변경될 확률이 높음
+  
+- 코드를 통해 변경의 이유를 파악할 수 있는 방법
+  - 첫번째, 인스턴스 변수가 초기화되는 시점을 살펴보는 것
+    - 응집도가 높은 클래스는 인스턴스 생성 시, 모든 속성이 함께 초기화 됨
+    - 응집도가 낮은 클래스는 객체의 속성 중 일부만 초기화하고 일부는 초기화되지 않은 상태로 남겨짐
+    - DiscountCondition 이 여기에 속하고 따라서 코드를 분리해야 됨
+  - 두번째 메서드들이 인스턴스 변수를 사용하는 방식을 살펴보는 것
+    - 모든 메서드가 객체의 모든 속성을 사용한다면 클래스의 응집도는 높음
+    - 반면 메서드들이 사용하는 속성에 따라 그룹이 나뉜다면 클래스의 응집도는 낮음
+    - DiscountCondition 는 응집도를 높이기 위해 속성 그룹과 해당 그룹에 접근하는 메서드 그룹을 기준으로 코드를 분리해야 됨
+    
+### 클래스 응집도 판단하기
+- 다음과 같은 징후면 응집도가 낮음
+  - 클래스가 하나 이상의 이유로 변경돼야 한다면 응집도가 낮은 것이다. 변경의 이유를 기준으로 클래스를 분리하라.
+  - 클래스의 인스턴스를 초기화하는 시점에 경우에 따라 서로 다른 속성들을 초기화하고 있다면 응집도가 낮은 것이다. 초기화되는 속성의 그룹을 기준으로 클래스를 분리하라.
+  - 메서드 그룹이 속성 그룹을 사용하는지 여부로 나뉜다면 응집도가 낮은 것이다. 이들 그룹을 기준으로 클래스를 분리하라.
+- DiscountCondition 위 세가지 징후가 모두 포함... 따라서 여러 개의 클래스로 분리
+  
+## 타입 분리하기
+- DiscountCondition 의 가장 큰 문제점 순번 조건과 기간 조건이라는 두 개의 독립적인 타입이 하나의 클래스 안에 공존
+- 
+  
+  
+
+
+  
+  
+  
 
