@@ -299,12 +299,136 @@ public class DiscountCondition {
   
 ## 타입 분리하기
 - DiscountCondition 의 가장 큰 문제점 순번 조건과 기간 조건이라는 두 개의 독립적인 타입이 하나의 클래스 안에 공존
-- 
-  
-  
+- SequenceCondition과 PeriodCondition 으로 분리
+```
+public class PeriodCondition {
+    private DayOfWeek dayOfWeek;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
 
+    public boolean isSatisfiedBy(Screening screening) {
+        return dayOfWeek.equals(screening.getWhenScreened().getDayOfWeek()) &&
+                startTime.compareTo(screening.getWhenScreened().toLocalTime()) <= 0 &&
+                endTime.compareTo(screening.getWhenScreened().toLocalTime()) >= 0;
+    }
+}
+
+public class SequenceCondition {
+    private int sequence;
+
+    public boolean isSatisfiedBy(Screening screening) {
+        return sequence == screening.getSequence();
+    }
+}
+
+```
   
+- 클래스를 분리하면 앞에 문제점이 해결됨
+- 하지만 새로운 문제점 발생
+  - Movie에서 기존에는 DiscountCondition 하나만 참조하고 있었는데 두개 클래스의 인스턴스 모두와 협력해야됨
   
+![5 4](https://user-images.githubusercontent.com/7076334/108092642-43e45000-70c0-11eb-995c-3ee0c294bdac.png)
+
+  
+- 첫번째 해결 방법 Movie 클래스 안에서 목록을 따로 유지
+  
+```
+public class Movie {
+    private List<PeriodCondition> periodConditions;
+    private List<SequenceCondition> sequenceConditions;
+
+    private boolean isDiscountable(Screening screening) {
+        return checkPeriodConditions(screening) ||
+                checkSequenceConditions(screening);
+    }
+
+    private boolean checkPeriodConditions(Screening screening) {
+        return periodConditions.stream()
+                .anyMatch(condition -> condition.isSatisfiedBy(screening));
+    }
+
+    private boolean checkSequenceConditions(Screening screening) {
+        return sequenceConditions.stream()
+                .anyMatch(condition -> condition.isSatisfiedBy(screening));
+    }
+}
+```
+
+- 하지만 문제점 발생
+  - 1) Movie 클래스가 PeriodCondition, SequenceCondition 클래스 양쪽 모두에 결합
+  - 2) 수정 후에 새로운 할인 조건을 추가하기 더 어려워짐 (List 추가해야됨)
+- DiscountCondition 입장에서 보면 응집도가 높아졌지만 변경과 캡슐화 관점에서 전체적으로 설계 품질이 나빠짐
+
+
+## 다형성을 통해 분리하기
+- Movie 입장에서 보면 SequenceCondition, PeriodCondition 은 사실 차이가 없다. 둘다 할인 여부 판단
+- 앞에서 배운 역할의 개념이 무대 위로 등장
+  - Movie의 입장에서 SequenceCondition, PeriodCondition이 동일한 책임을 수행한다는 것은 동일한 역할을 수행한다는 것을 의미
+- 역할을 사용하면 객체의 구체적인 타입을 추상화 할 수 있음 (인터페이스 / 추상 클래스)
+
+- DiscountCondition 인터페이스를 이용해서 역할 구현
+```
+public interface DiscountCondition {
+    boolean isSatisfiedBy(Screening screening);
+}
+
+
+public class PeriodCondition implements DiscountCondition {
+}
+
+public class SequenceCondition implements DiscountCondition {
+}
+```
+
+- 이제 Movie는 협력하는 객체의 구체적인 타입을 몰라도 됨
+```
+public class Movie {
+    private List<DiscountCondition> discountConditions;
+
+    public Money calculateMovieFee(Screening screening) {
+        if (isDiscountable(screening)) {
+            return fee.minus(calculateDiscountAmount());
+        }
+
+        return fee;
+    }
+
+    private boolean isDiscountable(Screening screening) {
+        return discountConditions.stream()
+                .anyMatch(condition -> condition.isSatisfiedBy(screening));
+    }
+}
+```
+
+- 객체의 타입에 따라 변하는 행동이 있다면 타입을 분리하고 변화하는 행동을 각 타입의 책임으로 할당하라
+  - GRASP에서는 이를 POLYMORPHISM(다형성) 패턴이라고 부른다.
+  
+### POLYMORPHISM 패턴
+- if ~ else 또는 switch ~ case 등의 사용은 프로그래밍을 수정하기 어렵게 변경에 취약하게함
+- POLYMORPHISM 패턴은 다형성을 이용해 새로운 변화를 다루기 쉽게 확장하라고 권고
+
+## 변경으로부터 보호하기
+- 새로운할인 조건 추가되면?
+  - DiscountCondition 이라는 추상화가 구체적인 타입을 캡슐화 함
+  - DiscountCondition 타입이 추가되도 Movie가 영향을 받지 않는다는 것을 의미
+- 이처럼 변경을 캡슐화하도록 책임을 할당하는 것을 GRASP 에서는 PROTECTED VARIATIONS(변경 보호) 패턴이라 부른다.
+
+### PROTECTED VARIATIONS 패턴
+- 변화가 예상되는 불안정한 지점들을 식별하고 그 주위에 안정된 인터페이스를 형성하도록 책임을 할당
+- PROTECTED VARIATIONS 패턴은 책임 할당의 관점에서 캡슐화를 설명한 것
+
+- 결론
+  - 하나의 클래스가 여러 타입의 행동을 구현하고 있는 것처럼 보인다면 클래스를 분해하고 다형성 패턴에 따라 책임을 분산
+  - 예측 가능한 변경으로 인해 여러 클래스들이 불안정해진다면 변경 보호 패턴에 따라 안정적이 인터페이스 뒤로 변경을 캡슐화
+  
+## Movie 클래스 개선하기
+## Movie 클래스 개선하기
+
+
+
+
+
+
   
 
