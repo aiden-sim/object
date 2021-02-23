@@ -1,4 +1,4 @@
-package theater.step02;
+package theater.step03;
 
 public class Audience {
     private Bag bag;
@@ -11,7 +11,7 @@ public class Audience {
         return bag;
     }
 
-    public Long setTicket(Ticket ticket) {
-        return bag.setTicket(ticket);
+    public Long buy(Ticket ticket) {
+        return bag.hold(ticket);
     }
 }

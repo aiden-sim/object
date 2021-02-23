@@ -1,4 +1,4 @@
-package theater.step02;
+package theater.step03;
 
 /**
  * 디미터 법칙 위반
@@ -11,6 +11,6 @@ public class Theater {
     }
 
     public void enter(Audience audience) {
-        ticketSeller.setTicket(audience);
+        ticketSeller.sellTo(audience);
     }
 }

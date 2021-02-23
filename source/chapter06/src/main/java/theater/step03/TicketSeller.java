@@ -1,4 +1,4 @@
-package theater.step02;
+package theater.step03;
 
 /**
  * 묻지말고 시켜라
@@ -14,9 +14,9 @@ public class TicketSeller {
         return ticketOffice;
     }
 
-    public void setTicket(Audience audience) {
+    public void sellTo(Audience audience) {
         ticketOffice.plusAmount(
-                audience.setTicket(ticketOffice.getTicket())
+                audience.buy(ticketOffice.getTicket())
         );
     }
 }
