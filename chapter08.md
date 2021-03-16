@@ -311,12 +311,57 @@ public class Movie {
   - 명시적인 의존성을 사용해야만 퍼블릭 인터페이스를 통해 컴파일타임 의존성을 적절한 런타임 의존성으로 교체가능
 
 ## new는 해롭다
+- 결합도 측면에서 new가 해로운 이유
+  - new 연산자를 사용하기 위해서는 구체 클래스의 이름을 직접 기술해야 함. 따라서 new를 사용하는 클라이언트는 추상화가 아닌 구체 클래스에 의존할 수 밖에 없기 때문에 결합도 높아짐
+  - new 연산자는 생성하려는 구체 클래스뿐만 아니라 어떤 인자를 이용해 클래스의 생성자를 호출해야 하는지도 알아야 함. new를 사용하면 클라이언트가 알아야 하는 지식의 양이 늘어나 결합도 높아짐
+
+- 구체 클래스에 직접 의존하면 결합도가 높아짐
+```
+public class Movie {
+    private DiscountPolicy discountPolicy;
+
+    public Movie(String title, Duration runningTime, Money fee) {
+        this.discountPolicy = new AmountDiscountPolicy(Money.wons(800),
+                                                       new SequenceCondition(1),
+                                                       new PeriodCondition(DayOfWeek.MONDAY,
+                                                                           LocalTime.of(10, 0), LocalTime.of(11, 59)));
+
+
+    }
+}
+```
+- Movie 클래스가 AmountDiscountPolicy의 인스턴스를 생성하기 위해서는 생성자에 전달되는 인자를 알고 있어야 함
+- Movie가 알아야 하는 지식의 양을 늘리기 때문에 AmountDiscountPolicy에 더 강하게 결합
+- Movie가 SequenceCondition, PeriodCondition 에도 의존하게 됨 (인자 정보도 Movie에 결합)
+
+![8 8](https://user-images.githubusercontent.com/7076334/111343029-5bfabf80-86be-11eb-8759-a61ee7d01895.png)
+- Movie가 더 많은 것에 의존할수록 점점 더 변경에 취약해짐
+
+- 해결 방법은 인스턴스를 생성하는 로직과 생성된 인스턴스를 사용하는 로직을 분리
+- 외부에서 인스턴스를 전달 받는 방법은 앞에서 본 의존성 해결 방법과 동일
+```
+public class Movie {
+    private DiscountPolicy discountPolicy;
+
+    public Movie(String title, Duration runningTime, Money fee, DiscountPolicy discountPolicy) {
+        this.discountPolicy = discountPolicy;
+    }
+}
+```
+
+- AmountDiscountPolicy의 인스턴스를 생성하는 책임은 Movie의 클라이언트로 옮겨지고 Movie는 AmountDiscountPolicy의 인스턴스를 사용만 함
+
+
 
 
 ## 가끔은 생성해도 무방하다
 
 
-## 표준 
+## 표준 클래스에 대한 의존은 해롭지 않다
+
+## 컨텍스트 확장하기
+
+## 조합 가능한 행동
 
 
 
