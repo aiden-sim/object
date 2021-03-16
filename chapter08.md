@@ -347,19 +347,69 @@ public class Movie {
         this.discountPolicy = discountPolicy;
     }
 }
+
+Movie avatar = new Movie("아바타",
+                   Duration.ofMinutes(120),
+                   Money.wons(1000),
+                   new AmountDiscountPolicy(Money.wons(800),
+                                            new SequenceCondition(1),
+                                            new PeriodCondition(DayOfWeek.MONDAY,
+                                                                LocalTime.of(10, 0), LocalTime.of(11, 59))));
 ```
 
 - AmountDiscountPolicy의 인스턴스를 생성하는 책임은 Movie의 클라이언트로 옮겨지고 Movie는 AmountDiscountPolicy의 인스턴스를 사용만 함
 
-
-
+- 사용과 생성의 책임을 분리하고, 의존성을 생성자에 명시적으로 드러내고, 구체 클래스가 아닌 추상 클래스에 의존하게 함으로써 설계를 유연하게 만들 수 있음
+  - 출발은 객체를 생성하는 책임을 객체 내부가 아니라 클라이언트로 옮기는 것에서 시작 
 
 ## 가끔은 생성해도 무방하다
+- 주로 협력하는 기본 객체를 설정하고 싶은 경우 사용
+
+- Movie에서 AmountDiscountPolicy와 주로 협력하고 가끔 PercentDiscountPolicy와 협력한다면?
+  - 인스턴스 생성 책임을 클라이언트로 옮긴다면 클라이언트 사이에 중복 코드가 늘어나고 Movie 사용성도 나빠짐 
+```
+public class Movie {
+    public Movie(String title, Duration runningTime, Money fee) {
+        this(title, runningTime, fee, new AmountDiscountPolicy())
+    }
+
+    public Movie(String title, Duration runningTime, Money fee, DiscountPolicy discountPolicy) {
+        this.discountPolicy = discountPolicy;
+    }
+```
+- 추가된 간략한 생성자를 통해 AmountDiscountPolicy의 인스턴스와 협력하면서도 컨텍스트에 적절한 DiscountPolicy의 인스턴스로 의존성을 교체 가능
+- 오버로딩 방식도 동일 하게 사용 가능 P.275
+
+- 트레이드오프
+  - 여기서 트레이드오프의 대상은 결합도와 사용성
+  - 구체 클래스에 의존하게 되더라도 클래스의 사용성이 더 중요하다면 결합도를 높이는 방향으로 코드를 작성 
+  - 가급적 구체 클래스에 대한 의존성을 제거할 수 있는 방법을 찾아라
 
 
 ## 표준 클래스에 대한 의존은 해롭지 않다
+- 변경될 확률이 거의 없는 클래스라면 의존성이 문제가 되지 않음
+  - 예를 들어 JDK에 포함된 표준 클래스
+  - 
+```
+public abstract class DiscountPolicy {
+    private List<DiscountCondition> conditions = new ArrayList<>();
+    
+    public void switchConditions(List<DiscountCondition> conditions) {
+      this.conditions = conditions;
+    }
+}
+```
+- 비록 클래스를 직접 생성하더라도 가능한 추상적인 타입을 사용하는 것이 확장성 측면에 유리
+
 
 ## 컨텍스트 확장하기
+- Movie를 확장해서 재사용하는 두가지 예제
+  - 첫번째) 할인 혜택을 제공하지 않는 영화의 예매 요금을 계산
+    - null을 추가 하는 경우? 예외 케이스가 발생되서 내부에 null 체크 로직이 추가되어야 함
+      - 어떤 경우든 코드 내부를 직접 수정하는 것은 버그의 발생 가능성을 높임
+    - NoneDiscountPolicy 추가 
+  - 두번째) 중복 적용이 가능한 할인 정책을 구현 
+
 
 ## 조합 가능한 행동
 
