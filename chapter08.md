@@ -89,9 +89,13 @@ public class PeriodCondition implements DiscountCondition {
 
 <img width="500" alt="8 5" src="https://user-images.githubusercontent.com/7076334/111326365-d7a14000-86af-11eb-9337-7a9d3256a523.png">
 
+- 코드상에서 Movie 클래스에서 AmountDiscountPolicy, PercentDiscountPolicy 클래스로 향하는 어떤 의존성도 존재하지 않음
+- 오직 추상 클래스인 DiscountPolicy 에만 의존
+
 
 <img width="500" alt="8 6" src="https://user-images.githubusercontent.com/7076334/111326374-d96b0380-86af-11eb-988f-80e044979c2f.png">
 
 
+- 실행 시점의 Movie 인스턴스는 AmountDiscountPolicy, PercentDiscountPolicy 인스턴스와 협력할 수 있어야 함
 
 
