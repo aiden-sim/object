@@ -189,9 +189,8 @@ public class PersonalPlaylist {
 ## 기본 정책에 세금 정책 조합하기
 - P.357
 
-- 세금 정책을 
-- P.357조합
-- P.357
+- 세금 정책을 조합하기 위해 가장 간단한 방법은 RegularPhone 클래스를 상속받은 TaxableRegularPhone 클래스 추가
+
 ```
 public class TaxableRegularPhone extends RegularPhone {
     private double taxRate;
@@ -208,6 +207,65 @@ public class TaxableRegularPhone extends RegularPhone {
     }
 }
 ```
+- 부모 클래스의 메서드를 재사용하기 위해 super 호출을 사용하면 원하는 결과를 쉽게 얻을 수 있지만 자식 클래스와 부모 클래스 사이의 결합도가 높아짐
+
+- 부모 클래스에서 정의한 추상 메서드를 호출하고 자식 클래스가 이 메서드를 오버라이딩 하도록 제공하면 결합도를 느슨하게 만들 수 있음
+```
+public abstract class Phone {
+    // 생략
+        
+    abstract protected Money afterCalculated(Money fee);
+}
+
+public class RegularPhone extends Phone {
+    // 생략
+    
+    @Override
+    protected Money afterCalculated(Money fee) {
+        return fee;
+    }
+}
+
+public class NightlyDiscountPhone extends Phone {
+    // 생략
+    
+    @Override
+    protected Money afterCalculated(Money fee) {
+        return fee;
+    }
+}
+```
+- 부모 클래스에 추상 메서드를 추가하면 모든 자식 클래스들이 추상 메서드를 오버라이딩해야 하는 문제점이 발생
+
+- 유연성을 유지하면서 중복 코드를 제거할 수 있는 방법은 Phone에서 afterCalculated에 대한 기본 구현을 함께 제공
+
+### 추상 메서드와 훅 메서드
+- 추상 메서드와 동일하게 자식 클래스에서 오버라이딩할 의도로 메서드를 추가했지만 편의를 위해 기본 구현을 제공하는 메서드를 훅 메서드(hook method)라 부름
+
+- P.360
+  - TaxableRegularPhone, TaxableNightlyDiscountPhone 세금을 부과하기 위해 클래스 추가
+
+![11_3](https://user-images.githubusercontent.com/7076334/113481432-7e6d4500-94d4-11eb-98a6-0fc6e74e2aad.png)
+- RegularPhone :  일반 요금제
+- TaxableRegularPhone : 일반 요금제에 세금 정책 조합
+- NightlyDiscountPhone : 심야 할인 요금제
+- TaxableNightlyDiscountPhone : 심야 할인 요금제 세금 정책 조합
+
+- 문제점
+  - TaxableRegularPhone, TaxableNightlyDiscountPhone 사이에 중복 코드 발생
+  - 객체지향 언어는 단일 상속만 지원하기 때문에 상속으로 인해 발생하는 중복을 해결하기 어려움
+
+
+## 기본 정책에 기본 요금 할인 정책 조합하기
+- P.362
+  - RateDiscountableRegularPhone, RateDiscountableNightlyDiscountPhone 요금 할인 정책을 위해 클래스 추가
+
+![11_4](https://user-images.githubusercontent.com/7076334/113481436-8200cc00-94d4-11eb-86ea-840928e7b9d2.png)
+
+- 문제점
+  - 이번에도 RateDiscountableRegularPhone, RateDiscountableNightlyDiscountPhone 사이에 중복 코드 발생
+
+## 중복 코드의 덫에 걸리다
 
 
 
