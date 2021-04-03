@@ -266,6 +266,35 @@ public class NightlyDiscountPhone extends Phone {
   - 이번에도 RateDiscountableRegularPhone, RateDiscountableNightlyDiscountPhone 사이에 중복 코드 발생
 
 ## 중복 코드의 덫에 걸리다
+- 만약 일반 요금제의 계산 결과에 세금 정책을 조합한 후 기본 요금 할인 정책을 추가 하고 싶다면?
+  - TaxableNightlyDiscountPhone를 상속 받는 TaxableAndDiscountableNightlyDiscountPhone 을 추가해야됨
+
+- 현재까지 구현된 상속 계층 구조
+
+![11_5](https://user-images.githubusercontent.com/7076334/113481783-8d54f700-94d6-11eb-84ab-e2fc5dc43e07.png)
+
+- 문제점
+  - 복잡함
+  - 바로 새로운 정책을 추가하기 어려움
+  - 새로운 정책을 추가하기 위해서 불필요하게 많은 수의 클래스를 상속 계층 안에 추가해야됨 
+
+- 고정 요금제 (FixedRatePhone)을 추가해야 된다면?
+
+![11_6](https://user-images.githubusercontent.com/7076334/113481846-ddcc5480-94d6-11eb-8250-12c0d566548e.jpeg)
+- 고정 요금제 하나를 추가하기 위해 5가지 새로운 클래스를 추가함
+
+- 상속의 남용으로 하나의 기능을 추가하기 위해 필요 이상으로 많은 수의 클래스를 추가 해야 하는 경우를 가리켜 **클래스 폭발** 이라고 부름
+- 클래스 폭발 문제는 자식 클래스가 부모 클래스의 구현에 강하게 결합되도록 강요하는 상속의 근본적인 한계 때문에 발생하는 문제
+- 클래스 폭발은 새로운 기능 추가 뿐만 아니라 수정할 때도 문제가 됨
+  - 하나라도 누락된다면 버그 발생
+
+# 03 합성 관계로 변경하기
+- 합성은 컴파일타임 관계를 런타임 관계로 변경함으로써 클래스 폭발 해결
+- 합성을 사용하면 구현이 아닌 퍼블릭 인터페이스에 대해서만 의존할 수 있기 때문에 런타임에 객체의 관계를 변경할 수 있음
+
+- 합성을 사용하면 구현 시점에 정책들의 관계를 고정시킬 필요가 없으며 실ㄹ행 시점에 정책들의 관계를 유연하게 변경할 수 있음
+
+
 
 
 
