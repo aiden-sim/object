@@ -293,6 +293,43 @@ public class NightlyDiscountPhone extends Phone {
 - 합성을 사용하면 구현이 아닌 퍼블릭 인터페이스에 대해서만 의존할 수 있기 때문에 런타임에 객체의 관계를 변경할 수 있음
 
 - 합성을 사용하면 구현 시점에 정책들의 관계를 고정시킬 필요가 없으며 실ㄹ행 시점에 정책들의 관계를 유연하게 변경할 수 있음
+- 상속이 조합의 결과를 개별 클래스 안으로 밀어 넣는 방법이라면 합성은 조합을 구성하는 요소들을 개별 클래스로 구현한 후 실행 시점에 인스턴스를 조립하는 방법을 사용하는 것
+
+## 기본 정책 합성하기
+- 각 정책별을 별도의 클래스로 구현
+  - 핸드폰과 요금 계산 방법 개념 분리
+
+- P.369
+- 합성 관계를 사용한 기본 정책의 정체적인 구조
+
+![11_7](https://user-images.githubusercontent.com/7076334/113483392-29cec780-94de-11eb-9992-b27e3a24ae0f.png)
+
+```
+// 일반 요금제 규칙
+Phone phone = new Phone(new RegularPolicy(Money.wons(10), Duration.ofSeconds(10)));
+
+// 심야 할인 요금제
+Phone phone2 = new Phone(new NightlyDiscountPolicy(Money.wons(5), Money.wons(10), Duration.ofSeconds(10)));
+```
+- 일반 요금제 사용하고 싶으면 Phone과 RegularPolicy의 인스턴스 합성
+- 심야 할인 요금제 사용하고 싶으면 Phone과 NightlyDiscountPolicy의 인스턴스 합성
+- 합성을 사용하면 Phone과 연결된 RatePolicy 인터페이스의 구현 클래스가 어떤 타입인지에 따라 요금을 계산 하는 방식이 달라짐
+
+## 부가 정책 적용하기
+- 컴파일 시점의 Phone 클래스와 RatePolicy 인터페이스 사이의 관계가 런타임에 Pone 인스턴스와 RegularPolicy 인스턴스 사이의 관계로 대체
+![11_8](https://user-images.githubusercontent.com/7076334/113483396-2d624e80-94de-11eb-9b7b-2f113643aac2.png)
+
+
+- 부가 정책을 추가
+  - 부가 정책은 기본 정책에 대한 계산이 끝난 후 적용
+  - RegularPolicy와 Phone 사이에 세금 정책을 구현하는 TaxablePolicy 인스턴스를 연결
+
+- 
+![11_9](https://user-images.githubusercontent.com/7076334/113483400-2dfae500-94de-11eb-8412-bbf35ccff16e.png)
+
+
+![11_10](https://user-images.githubusercontent.com/7076334/113483403-2e937b80-94de-11eb-95f1-cb68b948738c.png)
+
 
 
 
