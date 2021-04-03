@@ -184,7 +184,31 @@ public class PersonalPlaylist {
 
 ## 상속을 이용해서 기본 정책 구현하기
 - P.355 (10장에서 사용한 추상 클래스 상속 구조)
-  - 
+  - 부가 정책 없이 오직 기본 정책만으로 요금을 계산
+
+## 기본 정책에 세금 정책 조합하기
+- P.357
+
+- 세금 정책을 
+- P.357조합
+- P.357
+```
+public class TaxableRegularPhone extends RegularPhone {
+    private double taxRate;
+
+    public TaxableRegularPhone(Money amount, Duration seconds, double taxRate) {
+        super(amount, seconds);
+        this.taxRate = taxRate;
+    }
+
+    @Override
+    public Money calculateFee() {
+        Money fee = super.calculateFee(); // 자식 클래스와 부모 클래스 사이의 결합도가 높아진다.
+        return fee.plus(fee.times(taxRate));
+    }
+}
+```
+
 
 
 
