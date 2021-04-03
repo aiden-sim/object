@@ -323,12 +323,62 @@ Phone phone2 = new Phone(new NightlyDiscountPolicy(Money.wons(5), Money.wons(10)
 - 부가 정책을 추가
   - 부가 정책은 기본 정책에 대한 계산이 끝난 후 적용
   - RegularPolicy와 Phone 사이에 세금 정책을 구현하는 TaxablePolicy 인스턴스를 연결
-
-- 
+ 
 ![11_9](https://user-images.githubusercontent.com/7076334/113483400-2dfae500-94de-11eb-8412-bbf35ccff16e.png)
 
-
+- 일반 요금제에 기본 요금 할인 정책을 적용한 후에 세금 정책을 적용한다면? (아래와 같은 순서로 연결)
 ![11_10](https://user-images.githubusercontent.com/7076334/113483403-2e937b80-94de-11eb-95f1-cb68b948738c.png)
+
+- 그림 11.9와 그림 11.10은 두 가지 제약에 따라 부가 정책을 구현해야 함
+  -  부가 정책은 기본 정책이나 다른 부가 정책의 인스턴스를 참조할 수 있어야 한다. 다시 말해서 부가 정책의 인스턴스는 어떤 종류의 정책과도 합성될 수 있어야 한다.
+  -  Phone의 입장에서는 자신이 기본 정책ㅊ의 인스턴스에게 메시지를 전송하고 있는지, 부가 정책의 신스턴스에게 메시지를 전송하고 있는지를 몰라야 한다.
+  -  다시 말해서 기본 정책과 부가 정책은 협력 안에서 동일한 '역할'을 수행해야 한다. 이것은 부가 정책이 기본 정책과 동일한 RatePolicy 인터페이스를 구현해야 한다는 것을 의미한다.
+
+- P.374
+- 모든 요금 계산과 관련된 모든 클래스 사이의 관계를 다이어그램으로 표현
+![11_11](https://user-images.githubusercontent.com/7076334/113484228-22112200-94e2-11eb-8bd2-b515a615e290.png)
+
+## 기본 정책과 부가 정책 합성하기
+- 원하는 정책의 인스턴스를 생성한 후 의존성 주입을 통해 다른 정책의 인스턴스에 전달
+
+```
+// 일반 요금제에 세금 정책을 조합
+phone = new Phone(new TaxablePolicy(0.05, new RegularPolicy(Money.wons(10), Duration.ofSeconds(10))));
+
+// 일반 요금제에 기본 요금 할인 정책을 조합한 결과에 세금 정책을 조합
+phone = new Phone(new TaxablePolicy(0.05, new RateDiscountablePolicy(Money.wons(1000),
+                                                                     new RegularPolicy(Money.wons(10),
+                                                                                               Duration.ofSeconds(10)))));
+
+// 세금 정책과 기본 요금 할인 정책 적용 순서 변경
+phone = new Phone(new RateDiscountablePolicy(Money.wons(1000), new TaxablePolicy(0.05,new RegularPolicy(
+                                                                                 Money.wons(10),Duration.ofSeconds(10)))));
+                                                                                 
+// 동일한 정책으로 심야 할인 요금제도 적용
+phone = new Phone(new RateDiscountablePolicy(Money.wons(1000), new TaxablePolicy(0.05, 
+                                                               new NightlyDiscountPolicy(Money.wons(5), Money.wons(10), Duration.ofSeconds(10)))));
+
+```
+
+- 객체를 조합하고 사용하는 방식이 상속을 사용한 방식보다 더 예측 가능하고 일관성이 있따는 사실을 알게 될 것이다.
+
+## 새로운 정책 추가하기
+- 고정 요금제가 필요하다면 고정 요금제를 구현한 클래스 '하나' 만 추가 후 원하는 방식으로 조합
+![11_12](https://user-images.githubusercontent.com/7076334/113484231-250c1280-94e2-11eb-9842-31ae72dec54a.png)
+
+- 약정 할인 정책이라는 새로운 부가 정책이 필요한 경우? 클래스 '하나'만 추가 하면 됨
+![11_13](https://user-images.githubusercontent.com/7076334/113484235-25a4a900-94e2-11eb-840f-2f8b72cde432.png)
+
+- 오직 하나의 클래스만 추가하고 런타임에 필요한 정책들을 조합해서 원하는 기능을 얻을 수 있음
+- 요구사항을 변경할 때 오직 하나의 클래스만 수정해도 됨 (단일 책임 원칙을 준수)
+
+## 객체 합성이 클래스 상속보다 더 좋은 방법이다
+- 상속은 부모 클래스의 세부적인 구현에 자식 클래스를 강하게 결합 시키기 때문에 코드의 진화를 방해
+- 코드를 재사용하면서 건전한 결합도를 유지할 수 있는 더 좋은 방법은 합성을 이용
+
+- 상속을 사용해야 되는 경우는?
+  - 구현 상속과 인터페이스 상속 두 가지로 나눠야 함
+  - 이번 장에서 살펴본 상속에 대한 모든 단점들은 구현 상속에 국한된다는 점  
 
 
 
