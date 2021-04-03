@@ -323,7 +323,6 @@ Phone phone2 = new Phone(new NightlyDiscountPolicy(Money.wons(5), Money.wons(10)
 - 부가 정책을 추가
   - 부가 정책은 기본 정책에 대한 계산이 끝난 후 적용
   - RegularPolicy와 Phone 사이에 세금 정책을 구현하는 TaxablePolicy 인스턴스를 연결
- 
 ![11_9](https://user-images.githubusercontent.com/7076334/113483400-2dfae500-94de-11eb-8412-bbf35ccff16e.png)
 
 - 일반 요금제에 기본 요금 할인 정책을 적용한 후에 세금 정책을 적용한다면? (아래와 같은 순서로 연결)
