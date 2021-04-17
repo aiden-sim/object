@@ -354,21 +354,229 @@ public class Penguin implements Walker {
 - Stack과 Vector
 - ![스크린샷 2021-04-18 오전 2 01 21](https://user-images.githubusercontent.com/7076334/115120748-07fb3780-9fea-11eb-8233-195dfe5afa19.png)
   - 리스코프 치환 원칙을 위반하는 가장 큰 이유는 상속으로 인해 Stack에 포함돼서는 안 되는 Vector의 퍼블릭 인터페이스가 포함됐기 때문 
+  - Vector의 클라이언트는 임의의 위치에 요소 추가 가능
+  - Stack의 클라이언트는 Stack이 임의의 위치에서의 조회나 추가 금지
+  - 클라이언트 입장에서 Vector 대신 Stack으로 변환하거나 Stack 대신 Vector로 변환 했을 경우 기대했던 대로 동작하지 않는다.
+
+
+- 리스코프 치환 원칙
+  - 클라이언트와 격리한 채로 본 모델은 의미 있게 검증하는 것이 불가능하다는 중요한 결론을 이끔
+  - 상속 관계에 있는 두 클래스 사이의 관계를 클라이언트와 떨어트려 놓고 판단하지 말라
+
+- 결론
+  - 상속 관계는 클라이언트의 관점에서 자식 클래스가 부모 클래스를 대체할 수 있을 때만 올바름
+  - 대체 가능성을 결정하는 것은 클라이언트 
 
 
 ## is-a 관계 다시 살펴보기
-- 
+- is-a는 클라이언트 관점에서 is-a 일 때만 참이다.
+- 클라이언트에서 기대하는 행동이 있고 그 행동을 만족하는 경우 올바른 상속이라 볼 수 있음
+
+- 중요
+  - 오더스키가 설명한 is-a 관계를 행동이 호환되는 타입에 어떤 이름을 붙여야 하는지 설명하는 가이드라 생각하라
+  - 슈퍼타입과 서브타입이 클라이언트 입장에서 행동이 호환된다면 두 타입을 is-a로 연결해 문장을 만들어도 어색하지 않은 단어로 타입의 이름을 정리하라는 것
+  - 이름이 아니라 행동이 먼저다.
 
 ## 리스코프 치환 원칙은 유연한 설계의 기반이다
-- 
+- 새로운 자식 클래스를 추가하더라도 클라이언트 입장에서 동일하게 행동하기만 한다면 클라이언트를 수정ㅈ하지 않고도 상속 계층을 확장할 수 있음
+- 리스코프 치환 원칙을 따르는 설계는 유연할뿐만 아니라 확장성이 높음
+
+- 8장의 중복 할인 정책 (의존성 역전 원칙, 개방-폐쇄원칙, 리스코프 치환 원칙)
+- ![스크린샷 2021-04-18 오전 2 32 50](https://user-images.githubusercontent.com/7076334/115121575-688c7380-9fee-11eb-8ce3-09cf6d07d32d.png)
+  - 의존성 역전 원칙(DIP) : 상위 수준의 모듈인 Movie와 하위 수준의 모듈인 OverlappedDiscountPolicy는 모두 추상 클래스 DiscountPolicy에 의존 
+  - 리스코프 치환 원칙(LSP) : Movie 관점에서 DiscountPolicy 대신 OverlappedDiscountPolicy와 협력하더라도 문제 없음 (행동이 같음)
+  - 개방-폐쇄 원칙(OCP) : 새로운 기능을 추가하기 위해 OverlappedDiscountPolicy를 추가하더라도 Movie에 영향을 끼치지 않음
+
+- 리스코프 치환 원칙은 개방-폐쇄 원칙을 만족하는 설계를 위한 전제 조건
+- 일반적으로 리스코프 치환 원칙 위반은 잠재적인 개방-폐쇄 원칙 위반
+
+## 타입 계층과 리스코프 치환 원칙
+- 구현 방법은 중요하지 않음 (자바의 인터페이스나 스칼라의 트레이트가 되었던)
+- 구현 방법과 무관하게 클라이언트의 관점에서 슈퍼타입에 대해 기대하는 모든 것이 서브타입에게도 적용돼야 서브타이핑이라 할 수 있음
+
+# 05 계약에 의한 설계와 서브타이핑
+
+- 계약에 의한 설계 (P.540)
+  - 사전조건 : 메서드가 호출되기 위해 만족돼야 하는 조건. 사전조건을 만족시키는 것은 메서드를 실행하는 클라이언트의 의무다.
+  - 사후조건 : 메서드가 실행된 후에 클라이언트에게 보장해야 하는 조건. 사전조건을 만족시켰는데도 사후조건을 만족시키지 못한 경우에는 클라이언트에게 예외를 던져야 한다. 사후조건을 만족시키는 것은 서버의 의무다.
+  - 불변식 : 항상 참이라고 보장되는 서버의 조건. 메서드를 실행하기 전이나 종료된 후에 불변식은 항상 참이어야 한다.
+
+- 리스코프 치환 원칙과 계약에 의한 설계 사이의 관계를 다음과 같은 한 문장으로 요약할 수 있음
+  - 서브타입이 리스코프 치환 원칙을 만족시키기 위해서는 클라이언트와 슈퍼타입 간에 체결된 '계약'을 준수해야 한다.
+
+```
+// 클라이언트
+public class Movie {
+    
+    public Money calculateMovieFee(Screening screening) {
+        return fee.minus(discountPolicy.calculateDiscountAmount(screening));
+    }
+}
+
+// 서버
+public abstract class DiscountPolicy {
+    public Money calculateDiscountAmount(Screening screening) {
+        for (DiscountCondition each : conditions) {
+            if (each.isSatisfiedBy(screening)) {
+                return getDiscountAmount(screening);
+            }
+        }
+
+        return screening.getMovieFee();
+    }
+
+
+    abstract protected Money getDiscountAmount(Screening Screening);
+}
+
+```
+- Movie는 DiscountPolicy의 인스턴스에게 calculateDiscountAmount 메시지를 전송하는 클라이언트
+
+- 계약에 의한 설계에 따르면 협력하는 클라이언트와 슈퍼타입의 인스턴스 사이에는 어떤 계약이 맺어져 있음
+- 서브타입이 슈퍼타입처럼 보일 수 있는 유일한 방법은 클라이언트가 슈퍼타입과 맺은 계약을 서브타입이 준수하는 것뿐
+
+- 사전 조건
+  - calculateDiscountAmount 메서드 인자로 screening이 null인지 여부 확인 (NPE 발생)
+  - 영화 시작 시간이 아직 지나지 않았다고 가정
+
+- 사후 조건
+  - calculateDiscountAmount 메서드 반환값은 항상 null이 아니어야 함
+  - 반환되는 값은 청구되는 요금이기 때문에 최소한 0원보다는 커야 함
+
+```
+   public Money calculateDiscountAmount(Screening screening) {
+        checkPrecondition(screening); // 사전 조건
+
+        Money amount = Money.ZERO;
+        for (DiscountCondition each : conditions) {
+            if (each.isSatisfiedBy(screening)) {
+                amount = getDiscountAmount(screening);
+                checkPostcondition(amount);
+                return amount;
+            }
+        }
+
+        amount = screening.getMovieFee();
+        checkPostcondition(amount); // 사후 조건
+        return amount;
+    }
+
+    protected void checkPrecondition(Screening screening) {
+        assert screening != null &&
+                screening.getStartTime().isAfter(LocalDateTime.now());
+    }
+
+    protected void checkPostcondition(Money amount) {
+        assert amount != null && amount.isGreaterThanOrEqual(Money.ZERO);
+    }
+```
 
 
 
+- 사전조건을 만족시키기 위해 Movie는 사전조건을 위반하는 screening을 전달해서는 안됨
+```
+    public Money calculateMovieFee(Screening screening) {
+        if (screening == null ||
+                screening.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new InvalidScreeningException();
+        }
 
+        return fee.minus(discountPolicy.calculateDiscountAmount(screening));
+    }
+```
 
+- DiscountPolicy의 자식 클래스인 AmountDiscountPolicy, PercentDiscountPolicy, OverlappedDiscountPolicy는 Movie와 DiscountPolicy 사이에 체결된 계약을 만족시키는가?
+  - DiscountPolicy의 calculateDiscountAmount를 그대로 상속 받았기 때문에 계약을 변경하지 않음 (서브타이핑 관계)
 
+## 서브타입과 계약
+- 자식 클래스가 부모 클래스의 메서드를 오버라이딩 해서 더 강력한 사전조건을 정의했다면?
 
+```
+    @Override
+    public Money calculateDiscountAmount(Screening screening) {
+        checkPrecondition(screening);                 // 기존의 사전조건
+        checkStrongerPrecondition(screening);         // 더 강력한 사전조건
 
+        Money amount = screening.getMovieFee();
+        checkPostcondition(amount);                   // 기존의 사후조건
+        return amount;
+    }
+
+    private void checkStrongerPrecondition(Screening screening) {
+        assert screening.getEndTime().toLocalTime()
+                .isBefore(LocalTime.MIDNIGHT);
+    }
+```
+- Movie가 알고 있는 DiscountPolicy의 사전조건은 screening이 null이 아니면서 시작시간이 현재 시간 이후인 것
+- BrokenDiscountPolicy의 사전조건은 종료 시간이 자정을 넘는 영화를 예매할 수 없다
+  - BrokenDiscountPolicy과 협력은 실패하고 만다. DiscountPolicy의 서브타입이 아니다.
+```
+서브타입에 더 강력한 사전조건을 정의할 수 없다.
+```
+
+- 사전조건을 제거해서 약화 시킨다면?
+```
+    @Override
+    public Money calculateDiscountAmount(Screening screening) {
+        // checkPrecondition(screening);                 // 기존의 사전조건
+
+        Money amount = screening.getMovieFee();
+        checkPostcondition(amount);                   // 기존의 사후조건
+        return amount;
+    }
+```
+- 클라이언트(Movie)에서 자신의 의무를 충실히 수행하고 있기 때문에 이 조건을 체크하지 않는 것이 기존 협력에 어떤 영향도 미치지 않음 (문제 발생하지 않음)
+```
+서브타입에 슈퍼타입과 같거나 더 약한 사전조건을 정의할 수 있다.
+```
+
+- 사후조건을 강화한다면?
+```
+    @Override
+    public Money calculateDiscountAmount(Screening screening) {
+        checkPrecondition(screening);                 // 기존의 사전조건
+
+        Money amount = screening.getMovieFee();
+        checkPostcondition(amount);                   // 기존의 사후조건
+        checkStrongerPostcondition(amount);           // 더 강력한 사후조건
+        return amount;
+    }
+
+    private void checkStrongerPostcondition(Money amount) {
+        assert amount.isGreaterThanOrEqual(Money.wons(1000));
+    }
+```
+- 최소 1000원 이상 돼야 한다는 새로운 사후조건 추가
+- Movie는 최소한 0원보다 큰 금액을 반환받기만 하면 협력이 정상적으로 수행됐다고 가정한다. (계약을 위반하지 않음)
+```
+서브타입에 슈퍼타입과 같거나 더 강한 사후조건을 정의할 수 있다.
+```
+
+- 사후조건을 약하게 정의한다면?
+```
+    @Override
+    public Money calculateDiscountAmount(Screening screening) {
+        checkPrecondition(screening);                 // 기존의 사전조건
+
+        Money amount = screening.getMovieFee();
+        
+        // checkPostcondition(amount);                // 기존의 사후조건 제거
+        checkWeakerPostcondition(amount);             // 더 약한 사후조건
+        return amount;
+    }
+
+    private void checkWeakerPostcondition(Money amount) {
+        assert amount != null;
+    }
+```
+- null만 체크하고 금액에 대한 체크는 제거
+- Movie는 자기와 협력하는 객체가 반환된 금액이 0원보다는 크다고 믿고 있기 때문에 마이너스 금액이 넘어올 경우 위반
+```
+서브타입에 더 약한 사후조건을 정의할 수 없다.
+```
+
+- 계약에 의한 설계는 클라이언트 관점에서의 대체 가능성을 계약으로 설명할 수 있다는 사실을 잘 보여 준다.
+- 서브타이핑을 위해 상속을 사용하고 있다면 부모 클래스가 클라이언트와 맺고 있는 계약에 깊이 있게 고민해야 됨
 
 
 - 참고) https://songii00.github.io/2020/04/25/2020-04-25-OBJECTS%20Item%2013/
